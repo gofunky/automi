@@ -12,18 +12,19 @@ type Item interface {
 }
 
 type Process interface {
-	GetName() string
+	Id() string
 	Exec(context.Context) error
 	Init(context.Context) error
 	Uninit(context.Context) error
 }
 
 type Source interface {
-	GetOutput() <-chan interface{}
+	Output() <-chan interface{}
 }
 
 type Sink interface {
-	SetInput(<-chan interface{})
+	AddInput(<-chan interface{})
+	Inputs()[]<-chan interface{}	
 }
 
 type Processor interface {
