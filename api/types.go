@@ -6,6 +6,11 @@ import (
 	"golang.org/x/net/context"
 )
 
+type Item interface {
+	Key() string
+	Data() interface{}
+}
+
 type Process interface {
 	GetName() string
 	Exec(context.Context) error
