@@ -8,6 +8,4 @@ func TestNoop(t *testing.T) {
 	if err := p.Init(context.TODO()); err != nil {
 		t.Fatal(err)
 	}
-
-	
 }

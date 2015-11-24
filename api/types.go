@@ -20,10 +20,16 @@ type Function func (ctx context.Context, data ChannelData, out chan<- interface{
 
 type Process interface {
 	GetId() string
-	GetF() Function
+	GetFunc() Function
 	Init(context.Context) error
 	Exec(context.Context) error
 	Uninit(context.Context) error
+}
+
+type Processor interface {
+	SetProcess(Process)
+	SetConcurrency(int)
+	Exec(context.Context) error
 }
 
 type Source interface {
@@ -35,11 +41,7 @@ type Sink interface {
 	Inputs()[]<-chan interface{}	
 }
 
-type Processor interface {
-	Process
-	Source
-	Sink
-}
+
 
 type Endpoint interface {
 	Done() <-chan struct{}

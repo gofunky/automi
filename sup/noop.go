@@ -23,7 +23,7 @@ func (n *Noop) GetId() string {
 	return n.Id
 }
 
-func (n *Noop) GetF() api.Function {
+func (n *Noop) GetFunc() api.Function {
 	return func (c context.Context, data api.ChannelData, out chan<- interface{}) error {
 		return nil 
 	} 
