@@ -6,15 +6,23 @@ import (
 	"golang.org/x/net/context"
 )
 
-type Item interface {
-	Key() string
-	Data() interface{}
+
+
+type ChannelData struct {
+	Id string
+	Source string
+	Tuple map[interface{}]interface{}
 }
 
+
+type Function func (ctx context.Context, data ChannelData, out chan<- interface{}) error
+
+
 type Process interface {
-	Id() string
-	Exec(context.Context) error
+	GetId() string
+	GetF() Function
 	Init(context.Context) error
+	Exec(context.Context) error
 	Uninit(context.Context) error
 }
 

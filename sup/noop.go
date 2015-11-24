@@ -9,54 +9,46 @@ import (
 	"golang.org/x/net/context"
 )
 
-// NoopProc represents a non-operational processor.
+// Noop represents a non-operational process.
 // It simply return its input as the output channel.
 // A Noop processor can be useful in testing and
 // setting up an Automi process graph.
-type NoopProc struct {
-	Name string
-
-	input <-chan interface{}
+type Noop struct {
+	Id string
+	F api.Function
 	log   *logrus.Entry
 }
 
-func (n *NoopProc) GetName() string {
-	return n.Name
+func (n *Noop) GetId() string {
+	return n.Id
 }
 
-func (n *NoopProc) SetInput(in <-chan interface{}) {
-	n.input = in
+func (n *Noop) GetF() api.Function {
+	return func (c context.Context, data api.ChannelData, out chan<- interface{}) error {
+		return nil 
+	} 
 }
 
-func (n *NoopProc) GetOutput() <-chan interface{} {
-	return n.input
-}
-
-func (n *NoopProc) Init(ctx context.Context) error {
+func (n *Noop) Init(ctx context.Context) error {
 	log, ok := autoctx.GetLogEntry(ctx)
 	if !ok {
-		log = logrus.WithField("Proc", "Endpoint")
+		log = logrus.WithField("Proc", "Noop")
 		log.Error("Logger not found in context")
 	}
 
 	n.log = log.WithFields(logrus.Fields{
-		"Component": n.Name,
+		"Component": n.Id,
 		"Type":      fmt.Sprintf("%T", n),
 	})
 
-	if n.input == nil {
-		return api.ProcError{Err: fmt.Errorf("Input attribute not set")}
-	}
-
-	n.log.Info("Component initialized")
-
 	return nil
 }
 
-func (n *NoopProc) Exec(ctx context.Context) error {
+func (n *Noop) Exec(ctx context.Context) error {
 	return nil
 }
 
-func (n *NoopProc) Uninit(ctx context.Context) error {
+
+func (n *Noop) Uninit(ctx context.Context) error {
 	return nil
 }
