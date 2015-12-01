@@ -1,0 +1,30 @@
+Automi Design
+
+Automi Models
+-------------
+Process: Represent a processing element that can apply a function
+
+Processor: A driver that manages and runs one  process  
+
+Source : A special process that emitt data to a flow
+
+Sink: a special process that consumes data from a flow
+
+Stream:  The data flow betewen two processes
+
+Registry: registers process by name to be referenced in Flow.
+
+
+DataFlow Fluent API Frontend
+-----------------------------
+
+DataFlow : Models stream of data processing arrangement
+
+.From("<source_id>" ) : Returns a new DataFlow
+
+.AsKeyed("<FieldName>") : create keyed tuple stream
+
+.Map("<Process_Id>") : Applies a process with a map function
+
+.Join("<source_id> "): Applies a process with a join function
+ 

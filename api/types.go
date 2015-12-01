@@ -8,31 +8,25 @@ import (
 
 
 
-type ChannelData struct {
+type StreamData struct {
 	Id string
-	Source string
 	Tuple map[interface{}]interface{}
 }
 
 
-type Function func (ctx context.Context, data ChannelData, out chan<- interface{}) error
+type ProcElement func (ctx context.Context, data StreamData) error
 
-
-type Process interface {
-	GetId() string
-	GetFunc() Function
-	Init(context.Context) error
-	Exec(context.Context) error
-	Uninit(context.Context) error
-}
 
 type Processor interface {
-	SetProcess(Process)
+	SetProcess(ProcElement)
 	SetConcurrency(int)
+	AddInput()
 	Exec(context.Context) error
 }
 
 type Source interface {
+	Init(context.Context)
+	Uninit(context.Context)
 	Output() <-chan interface{}
 }
 
