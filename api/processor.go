@@ -30,6 +30,7 @@ func NewProcessor() Processor {
 func newDefaultProcessor() *defaultProcessor {
 	ch := make(chan StreamData, 1024)
 	return &defaultProcessor{
+		concurrency : 1,
 		input:  make([]ReadStream, 0),
 		outCh:  ch,
 		output: NewReadStream(ch),
