@@ -6,8 +6,34 @@ import (
 	"golang.org/x/net/context"
 )
 
+type Tuple struct {
+	Fields []string
+	Values []interface{}
+}
+
+func NewTuple(vals ...interface{}) Tuple {
+	return Tuple{
+		Fields: make([]string, 0),
+		Values: vals,
+	}
+}
+
+func (t Tuple) WithValues(vals ...interface{}) Tuple {
+	t.Values = append(t.Values, vals...)
+	return t
+}
+
+func (t Tuple) WithFields(fds ...string) Tuple {
+	t.Fields = append(t.Fields, fds...)
+	return t
+}
+
 type StreamData struct {
-	Tuple map[interface{}]interface{}
+	Tuple Tuple
+}
+
+func NewStreamData(t Tuple) StreamData {
+	return StreamData{Tuple: t}
 }
 
 type ReadStream interface {
@@ -30,11 +56,17 @@ type ProcessingElement interface {
 	Apply(ctx context.Context, data StreamData, output WriteStream) error
 }
 
+type ProcElemFunc func(context.Context, StreamData, WriteStream) error
+
+func (f ProcElemFunc) Apply(ctx context.Context, data StreamData, out WriteStream) error {
+	return f(ctx, data, out)
+}
+
 type Processor interface {
 	SetProcessingElement(ProcessingElement)
 	SetConcurrency(int)
 
-	AddInputStream(ReadStream)
+	SetInputStream(ReadStream)
 	GetOutputStream() ReadStream
 
 	Exec(context.Context) error

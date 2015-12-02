@@ -7,14 +7,14 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/Sirupsen/logrus"
-	_ "github.com/vladimirvivien/automi/context"
+	autoctx "github.com/vladimirvivien/automi/context"
 )
 
 type defaultProcessor struct {
 	procElem    ProcessingElement
 	concurrency int
 
-	input  []ReadStream
+	input  ReadStream
 	outCh  chan StreamData
 	output ReadStream
 
@@ -23,18 +23,29 @@ type defaultProcessor struct {
 	mutex     sync.RWMutex
 }
 
-func NewProcessor() Processor {
-	return newDefaultProcessor()
+func NewProcessor(ctx context.Context) Processor {
+	return newDefaultProcessor(ctx)
 }
 
-func newDefaultProcessor() *defaultProcessor {
-	ch := make(chan StreamData, 1024)
-	return &defaultProcessor{
-		concurrency : 1,
-		input:  make([]ReadStream, 0),
-		outCh:  ch,
-		output: NewReadStream(ch),
+func newDefaultProcessor(ctx context.Context) *defaultProcessor {
+	outCh := make(chan StreamData, 1024)
+	p := &defaultProcessor{
+		concurrency: 1,
+		outCh:       outCh,
+		output:      NewReadStream(outCh),
 	}
+
+	log, ok := autoctx.GetLogEntry(ctx)
+	if !ok {
+		log = logrus.WithField("Component", "DefaultProcessor")
+		log.Error("Logger not found in context")
+	}
+	p.log = log.WithFields(logrus.Fields{
+		"Component": "DefaultProcessor",
+		"Type":      fmt.Sprintf("%T", p),
+	})
+
+	return p
 }
 
 func (p *defaultProcessor) SetProcessingElement(elem ProcessingElement) {
@@ -45,8 +56,8 @@ func (p *defaultProcessor) SetConcurrency(concurr int) {
 	p.concurrency = concurr
 }
 
-func (p *defaultProcessor) AddInputStream(s ReadStream) {
-	p.input = append(p.input, s)
+func (p *defaultProcessor) SetInputStream(s ReadStream) {
+	p.input = s
 }
 
 func (p *defaultProcessor) GetOutputStream() ReadStream {
@@ -55,37 +66,29 @@ func (p *defaultProcessor) GetOutputStream() ReadStream {
 
 func (p *defaultProcessor) Exec(ctx context.Context) error {
 	// validate p
-	inputCount := len(p.input)
-	if len(p.input) == 0 {
-		return fmt.Errorf("No input stream found")
-	}
-
 	if p.concurrency < 1 {
 		p.concurrency = 1
 	}
 
-	p.log.Info("Execution started for process")
+	p.log.Info("Execution started for component")
 
 	exeCtx, cancel := context.WithCancel(ctx)
 
 	go func() {
 		defer func() {
 			p.output.Close()
-			p.log.Info("Shuttingdown default processor")
+			p.log.Info("Shuttingdown component")
 		}()
 
 		var barrier sync.WaitGroup
-		wgDelta := p.concurrency * inputCount
+		wgDelta := p.concurrency
 		barrier.Add(wgDelta)
 
-		for j := 0; j < len(p.input); j++ { // input
-			inCh := p.input[j].Get()
-			for i := 0; i < p.concurrency; i++ { // workers
-				go func(wg *sync.WaitGroup) {
-					defer wg.Done()
-					p.doProc(exeCtx, inCh)
-				}(&barrier)
-			}
+		for i := 0; i < p.concurrency; i++ { // workers
+			go func(wg *sync.WaitGroup) {
+				defer wg.Done()
+				p.doProc(exeCtx, p.input.Get())
+			}(&barrier)
 		}
 
 		wait := make(chan struct{})

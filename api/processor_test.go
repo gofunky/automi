@@ -6,21 +6,8 @@ import (
 	"golang.org/x/net/context"
 )
 
-type testPE func (context.Context, StreamData, WriteStream) error
-func (f testPE) Apply(ctx context.Context, data StreamData, out WriteStream) error {
-	return f(ctx, data, out)
-}
-
-
 func TestDefaultProcessor_New(t *testing.T) {
-	p := newDefaultProcessor()
-	if p.input == nil {
-		t.Fatal("Missing input")
-	}
-
-		if len(p.input) != 0 {
-		t.Fatal("Input len should be zero")
-	}
+	p := newDefaultProcessor(context.Background())
 
 	if p.output == nil {
 		t.Fatal("Missing output")
@@ -34,12 +21,11 @@ func TestDefaultProcessor_New(t *testing.T) {
 		t.Fatal("Concurrency should be initialized to 1.")
 	}
 
-
 }
 
-func TestDefaultProcessor_SetParams(t *testing.T) {
-	p := newDefaultProcessor()
-	pe := testPE(func(ctx context.Context, data StreamData, out WriteStream) error {
+func TestDefaultProcessor_Params(t *testing.T) {
+	p := newDefaultProcessor(context.Background())
+	pe := ProcElemFunc(func(ctx context.Context, data StreamData, out WriteStream) error {
 		return nil
 	})
 	p.SetProcessingElement(pe)
@@ -52,8 +38,57 @@ func TestDefaultProcessor_SetParams(t *testing.T) {
 		t.Fatal("Concurrency not being set")
 	}
 
-	p.AddInputStream(NewReadStream(make(chan StreamData)))
-	if len(p.input) != 1 {
-		t.Fatal("Input not added properly")
+	in := NewReadStream(make(chan StreamData))
+	p.SetInputStream(in)
+	if p.input != in {
+		t.Fatal("InputStream not added properly")
 	}
+
+	if p.GetOutputStream == nil {
+		t.Fatal("Outputstream not set")
+	}
+}
+
+func TestDefaultProcessor_Exec_1_Input(t *testing.T) {
+	in := make(chan StreamData)
+	go func() {
+		in <- StreamData{Tuple: NewTuple("A", "B", "C")}
+		in <- StreamData{Tuple: NewTuple("D", "E")}
+		in <- StreamData{Tuple: NewTuple("G")}
+		close(in)
+	}()
+
+	p := newDefaultProcessor(context.Background())
+
+	pe := ProcElemFunc(func(ctx context.Context, data StreamData, out WriteStream) error {
+		tuple := data.Tuple.Values
+		t.Logf("Processing data %v", tuple)
+		out.Put() <- StreamData{Tuple: NewTuple(len(tuple))}
+		return nil
+	})
+
+	p.SetInputStream(NewReadStream(in))
+	p.SetProcessingElement(pe)
+
+	wait := make(chan struct{})
+	go func() {
+		defer close(wait)
+		for data := range p.GetOutputStream().Get() {
+			val, ok := data.Tuple.Values[0].(int)
+			t.Logf("Got value %v", val)
+			if !ok {
+				t.Fatalf("Expeting type int, got %T, value %v", val, val)
+			}
+			if val != 3 && val != 2 && val != 1 {
+				t.Fatalf("Expecting values 3, 2, or 1, but got %d", val)
+			}
+		}
+	}()
+
+	if err := p.Exec(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+
+	<-wait
+
 }
