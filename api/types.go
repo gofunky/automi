@@ -6,21 +6,37 @@ import (
 	"golang.org/x/net/context"
 )
 
-
-
 type StreamData struct {
-	Id string
 	Tuple map[interface{}]interface{}
 }
 
+type ReadStream interface {
+	Get() <-chan StreamData
+	Close()
+}
 
-type ProcElement func (ctx context.Context, data StreamData) error
+type WriteStream interface {
+	Put() chan<- StreamData
+	Close()
+}
 
+type ReadWriteStream interface {
+	Get() <-chan StreamData
+	Put() chan<- StreamData
+	Close()
+}
+
+type ProcessingElement interface {
+	Apply(ctx context.Context, data StreamData, output WriteStream) error
+}
 
 type Processor interface {
-	SetProcess(ProcElement)
+	SetProcessingElement(ProcessingElement)
 	SetConcurrency(int)
-	AddInput()
+
+	AddInputStream(ReadStream)
+	GetOutputStream() ReadStream
+
 	Exec(context.Context) error
 }
 
@@ -32,10 +48,8 @@ type Source interface {
 
 type Sink interface {
 	AddInput(<-chan interface{})
-	Inputs()[]<-chan interface{}	
+	Inputs() []<-chan interface{}
 }
-
-
 
 type Endpoint interface {
 	Done() <-chan struct{}

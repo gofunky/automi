@@ -2,7 +2,7 @@ Automi Design
 
 Automi Models
 -------------
-Process: Represent a processing element that can apply a function
+ProcessingElement: Represent a processing element that can apply a function
 
 Processor: A driver that manages and runs one  process  
 
@@ -24,7 +24,7 @@ DataFlow : Models stream of data processing arrangement
 
 .AsKeyed("<FieldName>") : create keyed tuple stream
 
-.Map("<Process_Id>") : Applies a process with a map function
+.Map("<Processor_Id>") : Applies a process with a map function
 
 .Join("<source_id> "): Applies a process with a join function
  
