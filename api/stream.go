@@ -18,11 +18,6 @@ func (s *defaultReadStream) Get() <-chan StreamData {
 	return s.ch
 }
 
-func (s *defaultReadStream) Close() {
-	if s.ch != nil {
-		close(s.ch)
-	}
-}
 
 type defaultWriteStream struct {
 	ch chan StreamData
@@ -40,10 +35,4 @@ func newDefaultWriteStream(ch chan StreamData) *defaultWriteStream {
 
 func (s *defaultWriteStream) Put() chan<- StreamData {
 	return s.ch
-}
-
-func (s *defaultWriteStream) Close() {
-	if s.ch != nil {
-		close(s.ch)
-	}
 }

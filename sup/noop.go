@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/vladimirvivien/automi/api"
+	_"github.com/vladimirvivien/automi/api"
 	autoctx "github.com/vladimirvivien/automi/context"
 	"golang.org/x/net/context"
 )
@@ -18,21 +18,18 @@ type Noop struct {
 }
 
 
-// func (n *Noop) Init(ctx context.Context) error {
-// 	log, ok := autoctx.GetLogEntry(ctx)
-// 	if !ok {
-// 		log = logrus.WithField("Proc", "Noop")
-// 		log.Error("Logger not found in context")
-// 	}
+func (n *Noop) Init(ctx context.Context) error {
+	log, ok := autoctx.GetLogEntry(ctx)
+	if !ok {
+		log = logrus.WithField("Proc", "Noop")
+		log.Error("Logger not found in context")
+	}
 
-// 	n.log = log.WithFields(logrus.Fields{
-// 		"Component": n.Id,
-// 		"Type":      fmt.Sprintf("%T", n),
-// 	})
+	n.log = log.WithFields(logrus.Fields{
+		"Component": "NoOp",
+		"Type":      fmt.Sprintf("%T", n),
+	})
 
-// 	return nil
-// }
-
-func (n *Noop) Exec(f api.ProcFunc ) error {
 	return nil
 }
+

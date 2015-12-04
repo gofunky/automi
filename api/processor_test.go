@@ -2,8 +2,12 @@ package api
 
 import (
 	"testing"
+	"time"
+	"sync"
 
 	"golang.org/x/net/context"
+
+	"github.com/vladimirvivien/automi/testutil"
 )
 
 func TestDefaultProcessor_New(t *testing.T) {
@@ -25,7 +29,7 @@ func TestDefaultProcessor_New(t *testing.T) {
 
 func TestDefaultProcessor_Params(t *testing.T) {
 	p := newDefaultProcessor(context.Background())
-	pe := ProcElemFunc(func(ctx context.Context, data StreamData, out WriteStream) error {
+	pe := ProcElemFunc(func(ctx context.Context, data StreamData) interface{} {
 		return nil
 	})
 	p.SetProcessingElement(pe)
@@ -38,42 +42,38 @@ func TestDefaultProcessor_Params(t *testing.T) {
 		t.Fatal("Concurrency not being set")
 	}
 
-	in := NewReadStream(make(chan StreamData))
-	p.SetInputStream(in)
-	if p.input != in {
-		t.Fatal("InputStream not added properly")
+	if p.GetReadStream() == nil {
+		t.Fatal("InputStream not initialized")
 	}
 
-	if p.GetOutputStream == nil {
-		t.Fatal("Outputstream not set")
+	if p.GetWriteStream() == nil {
+		t.Fatal("Outputstream not initialized")
 	}
 }
 
-func TestDefaultProcessor_Exec_1_Input(t *testing.T) {
-	in := make(chan StreamData)
+func TestDefaultProcessor_Exec(t *testing.T) {
+	ctx, _ := context.WithCancel(context.Background())
+	p := newDefaultProcessor(ctx)
+
+	pe := ProcElemFunc(func(ctx context.Context, data StreamData ) interface{} {
+		values := data.Tuple.Values
+		t.Logf("Processing data %v, sending %d", values, len(values))
+		return len(values)
+	})
+	p.SetProcessingElement(pe)
+
+	in := p.GetWriteStream().Put()
 	go func() {
 		in <- StreamData{Tuple: NewTuple("A", "B", "C")}
 		in <- StreamData{Tuple: NewTuple("D", "E")}
 		in <- StreamData{Tuple: NewTuple("G")}
-		close(in)
+		p.Close(ctx)
 	}()
-
-	p := newDefaultProcessor(context.Background())
-
-	pe := ProcElemFunc(func(ctx context.Context, data StreamData, out WriteStream) error {
-		tuple := data.Tuple.Values
-		t.Logf("Processing data %v", tuple)
-		out.Put() <- StreamData{Tuple: NewTuple(len(tuple))}
-		return nil
-	})
-
-	p.SetInputStream(NewReadStream(in))
-	p.SetProcessingElement(pe)
 
 	wait := make(chan struct{})
 	go func() {
 		defer close(wait)
-		for data := range p.GetOutputStream().Get() {
+		for data := range p.GetReadStream().Get() {
 			val, ok := data.Tuple.Values[0].(int)
 			t.Logf("Got value %v", val)
 			if !ok {
@@ -89,6 +89,60 @@ func TestDefaultProcessor_Exec_1_Input(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	<-wait
+	select{
+	case <-wait:
+	case <-time.After(50  * time.Millisecond):
+		t.Fatal("Took too long...")
+	}
+}
 
+func BenchmarkDefaultProcessor_Exec(b *testing.B) {
+	ctx := context.Background()
+	p := newDefaultProcessor(ctx)
+	N := b.N
+	in := p.GetWriteStream().Put()	
+
+	go func() {
+		for i := 0; i < N; i++ {
+			in <- StreamData{Tuple: NewTuple(testutil.GenWord())}
+		}
+		p.Close(ctx)
+	}()
+
+	counter := 0
+	var m sync.RWMutex
+
+	pe := ProcElemFunc(func(ctx context.Context, data StreamData ) interface{} {
+		m.Lock()
+		counter++
+		m.Unlock()
+		return data
+	})
+	p.SetProcessingElement(pe)
+
+	// process output
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for _ = range p.GetReadStream().Get() {
+		}
+	}()
+
+	
+	if err := p.Exec(ctx); err != nil {
+		b.Fatal("Error during execution:", err)
+	}
+
+
+	select {
+	case <-done:
+	case <-time.After(time.Second * 60):
+		b.Fatal("Took too long")
+	}
+	m.RLock()
+	b.Logf("Input %d, counted %d", N, counter)
+	if counter != N {
+		b.Fatalf("Expected %d items processed,  got %d", N, counter)
+	}
+	m.RUnlock()
 }

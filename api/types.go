@@ -38,12 +38,10 @@ func NewStreamData(t Tuple) StreamData {
 
 type ReadStream interface {
 	Get() <-chan StreamData
-	Close()
 }
 
 type WriteStream interface {
 	Put() chan<- StreamData
-	Close()
 }
 
 type ReadWriteStream interface {
@@ -53,23 +51,33 @@ type ReadWriteStream interface {
 }
 
 type ProcessingElement interface {
-	Apply(ctx context.Context, data StreamData, output WriteStream) error
+	Apply(ctx context.Context, data StreamData) interface{}
 }
 
-type ProcElemFunc func(context.Context, StreamData, WriteStream) error
+type ProcElemFunc func(context.Context, StreamData) interface{}
 
-func (f ProcElemFunc) Apply(ctx context.Context, data StreamData, out WriteStream) error {
-	return f(ctx, data, out)
+func (f ProcElemFunc) Apply(ctx context.Context, data StreamData) interface{} {
+	return f(ctx, data)
+}
+
+type Muxer interface {
+	AddReadStream(ReadStream)
+	SetWriteStream(WriteStream)
+	Mux()
 }
 
 type Processor interface {
+	// surface ports
+	GetWriteStream() WriteStream
+	GetReadStream() ReadStream
+
+	// config params
 	SetProcessingElement(ProcessingElement)
 	SetConcurrency(int)
 
-	SetInputStream(ReadStream)
-	GetOutputStream() ReadStream
-
+	// behavior
 	Exec(context.Context) error
+	Close(context.Context) error
 }
 
 type Source interface {

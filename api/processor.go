@@ -14,8 +14,10 @@ type defaultProcessor struct {
 	procElem    ProcessingElement
 	concurrency int
 
-	input  ReadStream
-	outCh  chan StreamData
+	inCh chan StreamData
+	input  WriteStream
+
+	outCh chan StreamData
 	output ReadStream
 
 	log       *logrus.Entry
@@ -28,11 +30,15 @@ func NewProcessor(ctx context.Context) Processor {
 }
 
 func newDefaultProcessor(ctx context.Context) *defaultProcessor {
+	inCh := make(chan StreamData, 1024)
 	outCh := make(chan StreamData, 1024)
+
 	p := &defaultProcessor{
 		concurrency: 1,
-		outCh:       outCh,
-		output:      NewReadStream(outCh),
+		inCh:       inCh,
+		input:      NewWriteStream(inCh),
+		outCh: outCh,
+		output: NewReadStream(outCh),
 	}
 
 	log, ok := autoctx.GetLogEntry(ctx)
@@ -56,11 +62,11 @@ func (p *defaultProcessor) SetConcurrency(concurr int) {
 	p.concurrency = concurr
 }
 
-func (p *defaultProcessor) SetInputStream(s ReadStream) {
-	p.input = s
+func (p *defaultProcessor) GetWriteStream() WriteStream{
+	return p.input
 }
 
-func (p *defaultProcessor) GetOutputStream() ReadStream {
+func (p *defaultProcessor) GetReadStream() ReadStream {
 	return p.output
 }
 
@@ -72,11 +78,9 @@ func (p *defaultProcessor) Exec(ctx context.Context) error {
 
 	p.log.Info("Execution started for component")
 
-	exeCtx, cancel := context.WithCancel(ctx)
-
 	go func() {
 		defer func() {
-			p.output.Close()
+			close(p.outCh)
 			p.log.Info("Shuttingdown component")
 		}()
 
@@ -87,7 +91,7 @@ func (p *defaultProcessor) Exec(ctx context.Context) error {
 		for i := 0; i < p.concurrency; i++ { // workers
 			go func(wg *sync.WaitGroup) {
 				defer wg.Done()
-				p.doProc(exeCtx, p.input.Get())
+				p.doProc(ctx, p.inCh)
 			}(&barrier)
 		}
 
@@ -99,35 +103,64 @@ func (p *defaultProcessor) Exec(ctx context.Context) error {
 
 		select {
 		case <-wait:
+			if p.cancelled {
+				p.log.Infof("Component [%s] cancelling...")
+				return
+			}
 		case <-ctx.Done():
-			p.log.Infof("Component [%s] cancelling...")
-			cancel()
-			p.mutex.Lock()
-			p.cancelled = true
-			p.mutex.Unlock()
+			p.log.Info("Cancelled!")
 			return
 		}
 	}()
 	return nil
 }
 
-func (p *defaultProcessor) doProc(exeCtx context.Context, input <-chan StreamData) {
+func (p *defaultProcessor) doProc(ctx context.Context, input <-chan StreamData) {
 	if p.procElem == nil {
+		p.log.Error("No processing function installed, exiting.")
 		return
 	}
 
-	for item := range input {
-		err := p.procElem.Apply(exeCtx, item, NewWriteStream(p.outCh))
-		if err != nil {
-			p.log.Error(err)
-		}
+	exeCtx, cancel := context.WithCancel(ctx)
 
-		p.mutex.Lock()
-		if !p.cancelled {
-			p.outCh <- item
-		} else {
+	for  {
+		select {
+		// process incoming item
+		case item, opened := <- input:
+			if !opened {
+				return
+			}
+			result := p.procElem.Apply(exeCtx, item)
+
+			switch val := result.(type) {
+			case nil:
+				continue
+			case ProcError:
+				p.log.Error(val)
+				continue
+			case StreamData:
+				p.outCh <- val
+			default:
+				p.outCh <- StreamData{Tuple: NewTuple(val)}
+			}
+
+		// is cancelling	
+		case <- ctx.Done():
+			p.log.Infoln("Cancelling....")
+			p.mutex.Lock()
+			cancel()
+			p.cancelled = true
+			p.mutex.Unlock()
 			return
 		}
-		p.mutex.Unlock()
 	}
+
+}
+
+
+func (p *defaultProcessor) Close(ctx context.Context) error {
+	_, cancel := context.WithCancel(ctx)
+	cancel()
+	close(p.inCh)
+	return nil
 }
