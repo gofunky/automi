@@ -6,57 +6,13 @@ import (
 	"golang.org/x/net/context"
 )
 
-type Tuple struct {
-	Fields []string
-	Values []interface{}
-}
-
-func NewTuple(vals ...interface{}) Tuple {
-	return Tuple{
-		Fields: make([]string, 0),
-		Values: vals,
-	}
-}
-
-func (t Tuple) WithValues(vals ...interface{}) Tuple {
-	t.Values = append(t.Values, vals...)
-	return t
-}
-
-func (t Tuple) WithFields(fds ...string) Tuple {
-	t.Fields = append(t.Fields, fds...)
-	return t
-}
-
-type StreamData struct {
-	Tuple Tuple
-}
-
-func NewStreamData(t Tuple) StreamData {
-	return StreamData{Tuple: t}
-}
-
-type ReadStream interface {
-	Get() <-chan StreamData
-}
-
-type WriteStream interface {
-	Put() chan<- StreamData
-}
-
-type ReadWriteStream interface {
-	Get() <-chan StreamData
-	Put() chan<- StreamData
-	Close()
-}
-
 type ProcessingElement interface {
-	Apply(ctx context.Context, data StreamData) interface{}
+	Apply(ctx context.Context, data interface{}) interface{}
 }
 
-type ProcElemFunc func(context.Context, StreamData) interface{}
+type ProcFunc func(context.Context, interface{}) interface{}
 
-func (f ProcElemFunc) Apply(ctx context.Context, data StreamData) interface{} {
+func (f ProcFunc) Apply(ctx context.Context, data interface{}) interface{} {
 	return f(ctx, data)
 }
 

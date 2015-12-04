@@ -14,10 +14,10 @@ type defaultProcessor struct {
 	procElem    ProcessingElement
 	concurrency int
 
-	inCh chan StreamData
+	inCh chan interface{}
 	input  WriteStream
 
-	outCh chan StreamData
+	outCh chan interface{}
 	output ReadStream
 
 	log       *logrus.Entry
@@ -30,8 +30,8 @@ func NewProcessor(ctx context.Context) Processor {
 }
 
 func newDefaultProcessor(ctx context.Context) *defaultProcessor {
-	inCh := make(chan StreamData, 1024)
-	outCh := make(chan StreamData, 1024)
+	inCh := make(chan interface{}, 1024)
+	outCh := make(chan interface{}, 1024)
 
 	p := &defaultProcessor{
 		concurrency: 1,
@@ -115,7 +115,7 @@ func (p *defaultProcessor) Exec(ctx context.Context) error {
 	return nil
 }
 
-func (p *defaultProcessor) doProc(ctx context.Context, input <-chan StreamData) {
+func (p *defaultProcessor) doProc(ctx context.Context, input <-chan interface{}) {
 	if p.procElem == nil {
 		p.log.Error("No processing function installed, exiting.")
 		return
@@ -138,10 +138,8 @@ func (p *defaultProcessor) doProc(ctx context.Context, input <-chan StreamData) 
 			case ProcError:
 				p.log.Error(val)
 				continue
-			case StreamData:
-				p.outCh <- val
 			default:
-				p.outCh <- StreamData{Tuple: NewTuple(val)}
+				p.outCh <- val
 			}
 
 		// is cancelling	

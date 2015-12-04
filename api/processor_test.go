@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/vladimirvivien/automi/testutil"
+	"github.com/vladimirvivien/automi/api/tuple"
 )
 
 func TestDefaultProcessor_New(t *testing.T) {
@@ -29,7 +30,7 @@ func TestDefaultProcessor_New(t *testing.T) {
 
 func TestDefaultProcessor_Params(t *testing.T) {
 	p := newDefaultProcessor(context.Background())
-	pe := ProcElemFunc(func(ctx context.Context, data StreamData) interface{} {
+	pe := ProcFunc(func(ctx context.Context, data interface{}) interface{} {
 		return nil
 	})
 	p.SetProcessingElement(pe)
@@ -55,8 +56,8 @@ func TestDefaultProcessor_Exec(t *testing.T) {
 	ctx, _ := context.WithCancel(context.Background())
 	p := newDefaultProcessor(ctx)
 
-	pe := ProcElemFunc(func(ctx context.Context, data StreamData ) interface{} {
-		values := data.Tuple.Values
+	pe := ProcFunc(func(ctx context.Context, data interface{}) interface{} {
+		values := data.(tuple.Tuple).Values()
 		t.Logf("Processing data %v, sending %d", values, len(values))
 		return len(values)
 	})
@@ -64,9 +65,9 @@ func TestDefaultProcessor_Exec(t *testing.T) {
 
 	in := p.GetWriteStream().Put()
 	go func() {
-		in <- StreamData{Tuple: NewTuple("A", "B", "C")}
-		in <- StreamData{Tuple: NewTuple("D", "E")}
-		in <- StreamData{Tuple: NewTuple("G")}
+		in <- tuple.New("A", "B", "C")
+		in <- tuple.New("D", "E")
+		in <- tuple.New("G")
 		p.Close(ctx)
 	}()
 
@@ -74,7 +75,7 @@ func TestDefaultProcessor_Exec(t *testing.T) {
 	go func() {
 		defer close(wait)
 		for data := range p.GetReadStream().Get() {
-			val, ok := data.Tuple.Values[0].(int)
+			val, ok := data.(int)
 			t.Logf("Got value %v", val)
 			if !ok {
 				t.Fatalf("Expeting type int, got %T, value %v", val, val)
@@ -104,7 +105,7 @@ func BenchmarkDefaultProcessor_Exec(b *testing.B) {
 
 	go func() {
 		for i := 0; i < N; i++ {
-			in <- StreamData{Tuple: NewTuple(testutil.GenWord())}
+			in <- tuple.New(testutil.GenWord())
 		}
 		p.Close(ctx)
 	}()
@@ -112,7 +113,7 @@ func BenchmarkDefaultProcessor_Exec(b *testing.B) {
 	counter := 0
 	var m sync.RWMutex
 
-	pe := ProcElemFunc(func(ctx context.Context, data StreamData ) interface{} {
+	pe := ProcFunc(func(ctx context.Context, data interface{} ) interface{} {
 		m.Lock()
 		counter++
 		m.Unlock()
