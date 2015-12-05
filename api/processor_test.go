@@ -18,7 +18,7 @@ func TestDefaultProcessor_New(t *testing.T) {
 		t.Fatal("Missing output")
 	}
 
-	if p.procElem != nil {
+	if p.op != nil {
 		t.Fatal("Processing element should be nil")
 	}
 
@@ -30,11 +30,11 @@ func TestDefaultProcessor_New(t *testing.T) {
 
 func TestDefaultProcessor_Params(t *testing.T) {
 	p := newDefaultProcessor(context.Background())
-	pe := ProcFunc(func(ctx context.Context, data interface{}) interface{} {
+	op := OpFunc(func(ctx context.Context, data interface{}) interface{} {
 		return nil
 	})
-	p.SetProcessingElement(pe)
-	if p.procElem == nil {
+	p.SetOp(op)
+	if p.op == nil {
 		t.Fatal("process Elem not set")
 	}
 
@@ -56,12 +56,12 @@ func TestDefaultProcessor_Exec(t *testing.T) {
 	ctx, _ := context.WithCancel(context.Background())
 	p := newDefaultProcessor(ctx)
 
-	pe := ProcFunc(func(ctx context.Context, data interface{}) interface{} {
+	op := OpFunc(func(ctx context.Context, data interface{}) interface{} {
 		values := data.(tuple.Tuple).Values()
 		t.Logf("Processing data %v, sending %d", values, len(values))
 		return len(values)
 	})
-	p.SetProcessingElement(pe)
+	p.SetOp(op)
 
 	in := p.GetWriteStream().Put()
 	go func() {
@@ -113,13 +113,13 @@ func BenchmarkDefaultProcessor_Exec(b *testing.B) {
 	counter := 0
 	var m sync.RWMutex
 
-	pe := ProcFunc(func(ctx context.Context, data interface{} ) interface{} {
+	op := OpFunc(func(ctx context.Context, data interface{} ) interface{} {
 		m.Lock()
 		counter++
 		m.Unlock()
 		return data
 	})
-	p.SetProcessingElement(pe)
+	p.SetOp(op)
 
 	// process output
 	done := make(chan struct{})

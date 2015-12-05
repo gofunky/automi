@@ -11,7 +11,7 @@ import (
 )
 
 type defaultProcessor struct {
-	procElem    ProcessingElement
+	op    Op
 	concurrency int
 
 	inCh chan interface{}
@@ -25,7 +25,7 @@ type defaultProcessor struct {
 	mutex     sync.RWMutex
 }
 
-func NewProcessor(ctx context.Context) Processor {
+func NewProcessor(ctx context.Context) StreamProcessor {
 	return newDefaultProcessor(ctx)
 }
 
@@ -54,8 +54,8 @@ func newDefaultProcessor(ctx context.Context) *defaultProcessor {
 	return p
 }
 
-func (p *defaultProcessor) SetProcessingElement(elem ProcessingElement) {
-	p.procElem = elem
+func (p *defaultProcessor) SetOp(op Op) {
+	p.op = op
 }
 
 func (p *defaultProcessor) SetConcurrency(concurr int) {
@@ -68,6 +68,12 @@ func (p *defaultProcessor) GetWriteStream() WriteStream{
 
 func (p *defaultProcessor) GetReadStream() ReadStream {
 	return p.output
+}
+
+func (p *defaultProcessor) Close(ctx context.Context) error {
+	close(p.inCh)
+	p.inCh = nil
+	return nil
 }
 
 func (p *defaultProcessor) Exec(ctx context.Context) error {
@@ -116,7 +122,7 @@ func (p *defaultProcessor) Exec(ctx context.Context) error {
 }
 
 func (p *defaultProcessor) doProc(ctx context.Context, input <-chan interface{}) {
-	if p.procElem == nil {
+	if p.op == nil {
 		p.log.Error("No processing function installed, exiting.")
 		return
 	}
@@ -130,12 +136,12 @@ func (p *defaultProcessor) doProc(ctx context.Context, input <-chan interface{})
 			if !opened {
 				return
 			}
-			result := p.procElem.Apply(exeCtx, item)
+			result := p.op.Apply(exeCtx, item)
 
 			switch val := result.(type) {
 			case nil:
 				continue
-			case ProcError:
+			case error, ProcError:
 				p.log.Error(val)
 				continue
 			default:
@@ -152,13 +158,4 @@ func (p *defaultProcessor) doProc(ctx context.Context, input <-chan interface{})
 			return
 		}
 	}
-
-}
-
-
-func (p *defaultProcessor) Close(ctx context.Context) error {
-	_, cancel := context.WithCancel(ctx)
-	cancel()
-	close(p.inCh)
-	return nil
 }

@@ -6,13 +6,13 @@ import (
 	"golang.org/x/net/context"
 )
 
-type ProcessingElement interface {
+type Op interface {
 	Apply(ctx context.Context, data interface{}) interface{}
 }
 
-type ProcFunc func(context.Context, interface{}) interface{}
+type OpFunc func(context.Context, interface{}) interface{}
 
-func (f ProcFunc) Apply(ctx context.Context, data interface{}) interface{} {
+func (f OpFunc) Apply(ctx context.Context, data interface{}) interface{} {
 	return f(ctx, data)
 }
 
@@ -22,27 +22,25 @@ type Muxer interface {
 	Mux()
 }
 
-type Processor interface {
-	// surface ports
+type Process interface {
+	SetOp(Op)
+	SetConcurrency(int)
+	Exec(context.Context) error
+	Close(context.Context) error	
+}
+
+type StreamProcessor interface {
+	Process
 	GetWriteStream() WriteStream
 	GetReadStream() ReadStream
-
-	// config params
-	SetProcessingElement(ProcessingElement)
-	SetConcurrency(int)
-
-	// behavior
-	Exec(context.Context) error
-	Close(context.Context) error
 }
 
-type Source interface {
-	Init(context.Context)
-	Uninit(context.Context)
-	Output() <-chan interface{}
+type StreamProducer interface {
+	Process
+	GetReadStream() ReadStream
 }
 
-type Sink interface {
+type Sink interface { 
 	AddInput(<-chan interface{})
 	Inputs() []<-chan interface{}
 }

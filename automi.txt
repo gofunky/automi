@@ -14,17 +14,21 @@ Stream:  The data flow betewen two processes
 
 Registry: registers process by name to be referenced in Flow.
 
+Plan
+
+Program
+
 
 DataFlow Fluent API Frontend
 -----------------------------
 
 DataFlow : Models stream of data processing arrangement
 
-.From("<source_id>" ) : Returns a new DataFlow
-
-.AsKeyed("<FieldName>") : create keyed tuple stream
-
-.Map("<Processor_Id>") : Applies a process with a map function
+.ReadFrom("<source_id>" ) : Returns a new DataFlow
+.WriteTo("<sink_id>") : writes a sink
+.Exec("<process_id>"): flows data to process for execution
+// specialized operators
+ .Map("<Processor_Id>") : Applies a process with a map function
 
 .Join("<source_id> "): Applies a process with a join function
  
