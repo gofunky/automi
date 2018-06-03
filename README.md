@@ -239,16 +239,18 @@ Automi comes with a set of built-in components to get you started with stream pr
 * `Slice`
 * `Writer`
 
-## Roadmap
+## TODO
 
-* [ ] Alpha release (soon)
+* [ ] Release 0.1
 * [ ] Automatically turn on batch when batch operators are invoked
-* [ ] Stream emitter to source from another stream
-* [ ] Stream collector to sink to another stream
-* [ ] New stream operators (join, split, broadcast, etc)
+* [ ] Emitter to source from another stream
+* [ ] Collector to sink into another stream
+* [ ] More stream operators (join, split, broadcast, etc)
 * [ ] Expose parallelization as operators
+* [ ] Optimization and performance-tuning
 * [ ] Add type-specific operators to streams
 * [ ] Performance-related tuning
+
 
 ## Licence
 Apache 2.0
