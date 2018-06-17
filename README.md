@@ -248,6 +248,7 @@ Automi comes with a set of built-in components to get you started with stream pr
 * [ ] Add copyright to source files
 * [ ] Doc wiki
 * [x] Dependency mgmt
+* [ ] Fix tests with `-race` failure
 
 ### Future
 
