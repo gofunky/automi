@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vladimirvivien/automi/api"
-	"github.com/vladimirvivien/automi/testutil"
+	"github.com/gofunky/automi/api"
+	"github.com/gofunky/automi/testutil"
 )
 
 func TestUnaryOp_New(t *testing.T) {

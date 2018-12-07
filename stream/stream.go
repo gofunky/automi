@@ -8,12 +8,12 @@ import (
 	"reflect"
 
 	"github.com/go-faces/logger"
-	"github.com/vladimirvivien/automi/api"
-	autoctx "github.com/vladimirvivien/automi/api/context"
-	"github.com/vladimirvivien/automi/collectors"
-	"github.com/vladimirvivien/automi/emitters"
-	streamop "github.com/vladimirvivien/automi/operators/stream"
-	"github.com/vladimirvivien/automi/util"
+	"github.com/gofunky/automi/api"
+	autoctx "github.com/gofunky/automi/api/context"
+	"github.com/gofunky/automi/collectors"
+	"github.com/gofunky/automi/emitters"
+	streamop "github.com/gofunky/automi/operators/stream"
+	"github.com/gofunky/automi/util"
 )
 
 // Stream represents a stream unto  which executor nodes can be

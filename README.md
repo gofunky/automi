@@ -2,7 +2,7 @@
 
 A stream API for the Go programming language (alpha)
 
-[![GoDoc](https://godoc.org/github.com/vladimirvivien/automi?status.svg)](https://godoc.org/github.com/vladimirvivien/automi)
+[![GoDoc](https://godoc.org/github.com/gofunky/automi?status.svg)](https://godoc.org/github.com/gofunky/automi)
 [![Build Status](https://travis-ci.org/vladimirvivien/automi.svg)](https://travis-ci.org/vladimirvivien/automi)
 
 Automi is an API for processing streams of data using idiomatic Go.  Using Automi, programs can process streaming of data chunks by composing stages of operations that are applied to each element of the stream.  

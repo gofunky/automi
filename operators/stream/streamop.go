@@ -6,9 +6,9 @@ import (
 	"reflect"
 
 	"github.com/go-faces/logger"
-	autoctx "github.com/vladimirvivien/automi/api/context"
-	"github.com/vladimirvivien/automi/api/tuple"
-	"github.com/vladimirvivien/automi/util"
+	autoctx "github.com/gofunky/automi/api/context"
+	"github.com/gofunky/automi/api/tuple"
+	"github.com/gofunky/automi/util"
 )
 
 // StreamOperator is an operator takes streamed items of type

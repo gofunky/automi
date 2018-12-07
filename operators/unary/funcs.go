@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/vladimirvivien/automi/api"
+	"github.com/gofunky/automi/api"
 )
 
 // ProcessFunc returns a unary function which applies the specified

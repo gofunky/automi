@@ -3,7 +3,7 @@ package batch
 import (
 	"context"
 
-	"github.com/vladimirvivien/automi/api"
+	"github.com/gofunky/automi/api"
 )
 
 // TriggerAll forces the batch trigger to always return false

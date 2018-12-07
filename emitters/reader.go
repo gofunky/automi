@@ -6,8 +6,8 @@ import (
 	"io"
 
 	"github.com/go-faces/logger"
-	autoctx "github.com/vladimirvivien/automi/api/context"
-	"github.com/vladimirvivien/automi/util"
+	autoctx "github.com/gofunky/automi/api/context"
+	"github.com/gofunky/automi/util"
 )
 
 // ReaderEmitter takes an io.Reader as its source and emits a slice of

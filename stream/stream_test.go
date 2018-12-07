@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vladimirvivien/automi/api"
-	"github.com/vladimirvivien/automi/collectors"
-	"github.com/vladimirvivien/automi/emitters"
+	"github.com/gofunky/automi/api"
+	"github.com/gofunky/automi/collectors"
+	"github.com/gofunky/automi/emitters"
 )
 
 func TestStream_New(t *testing.T) {

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vladimirvivien/automi/collectors"
-	"github.com/vladimirvivien/automi/emitters"
-	"github.com/vladimirvivien/automi/stream"
+	"github.com/gofunky/automi/collectors"
+	"github.com/gofunky/automi/emitters"
+	"github.com/gofunky/automi/stream"
 )
 
 func main() {

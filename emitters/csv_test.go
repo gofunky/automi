@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vladimirvivien/automi/testutil"
+	"github.com/gofunky/automi/testutil"
 )
 
 func TestEmitter_CSVBuilder(t *testing.T) {

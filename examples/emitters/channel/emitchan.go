@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/vladimirvivien/automi/collectors"
-	"github.com/vladimirvivien/automi/stream"
+	"github.com/gofunky/automi/collectors"
+	"github.com/gofunky/automi/stream"
 )
 
 type log map[string]string

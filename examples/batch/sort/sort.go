@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vladimirvivien/automi/collectors"
-	"github.com/vladimirvivien/automi/stream"
+	"github.com/gofunky/automi/collectors"
+	"github.com/gofunky/automi/stream"
 )
 
 func main() {

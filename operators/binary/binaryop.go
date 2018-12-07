@@ -6,9 +6,9 @@ import (
 	"sync"
 
 	"github.com/go-faces/logger"
-	"github.com/vladimirvivien/automi/api"
-	autoctx "github.com/vladimirvivien/automi/api/context"
-	"github.com/vladimirvivien/automi/util"
+	"github.com/gofunky/automi/api"
+	autoctx "github.com/gofunky/automi/api/context"
+	"github.com/gofunky/automi/util"
 )
 
 // BinaryOperator represents an operator that knows how to run a

@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/vladimirvivien/automi/collectors"
-	"github.com/vladimirvivien/automi/stream"
+	"github.com/gofunky/automi/collectors"
+	"github.com/gofunky/automi/stream"
 )
 
 // Uses filepath.Walk to emit visited paths from root

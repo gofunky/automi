@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/vladimirvivien/automi/stream"
+	"github.com/gofunky/automi/stream"
 )
 
 // scientist represents row data in source (csv file)

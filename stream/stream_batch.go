@@ -1,9 +1,9 @@
 package stream
 
 import (
-	"github.com/vladimirvivien/automi/api"
-	"github.com/vladimirvivien/automi/operators/batch"
-	"github.com/vladimirvivien/automi/operators/unary"
+	"github.com/gofunky/automi/api"
+	"github.com/gofunky/automi/operators/batch"
+	"github.com/gofunky/automi/operators/unary"
 )
 
 func (s *Stream) Batch() *Stream {
@@ -26,7 +26,7 @@ func (s *Stream) BatchBySize(size int64) *Stream {
 // See Also
 //
 // See batch operator function GroupByKey in
-//   "github.com/vladimirvivien/automi/operators/batch/"#GroupByKeyFunc
+//   "github.com/gofunky/automi/operators/batch/"#GroupByKeyFunc
 func (s *Stream) GroupByKey(key interface{}) *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.GroupByKeyFunc(key))
@@ -41,7 +41,7 @@ func (s *Stream) GroupByKey(key interface{}) *Stream {
 // See Also
 //
 // See batch operator function GroupByName in
-//    "github.com/vladimirvivien/automi/operators/batch"
+//    "github.com/gofunky/automi/operators/batch"
 func (s *Stream) GroupByName(name string) *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.GroupByNameFunc(name))
@@ -55,7 +55,7 @@ func (s *Stream) GroupByName(name string) *Stream {
 // See Also
 //
 // See the batch operator function GroupByPosFunc in
-//   "github.com/vladimirvivien/automi/operators/batch"
+//   "github.com/gofunky/automi/operators/batch"
 func (s *Stream) GroupByPos(pos int) *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.GroupByPosFunc(pos))
@@ -68,7 +68,7 @@ func (s *Stream) GroupByPos(pos int) *Stream {
 // See Also
 //
 // See also the operator function SortFunc in
-//   "github.com/vladimirvivien/automi/operators/batch"
+//   "github.com/gofunky/automi/operators/batch"
 func (s *Stream) Sort() *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.SortFunc())
@@ -82,7 +82,7 @@ func (s *Stream) Sort() *Stream {
 // See Also
 //
 // See also the operator function SortByKeyFunc in
-//   "github.com/vladimirvivien/automi/operators/batch"
+//   "github.com/gofunky/automi/operators/batch"
 func (s *Stream) SortByKey(key interface{}) *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.SortByKeyFunc(key))
@@ -96,7 +96,7 @@ func (s *Stream) SortByKey(key interface{}) *Stream {
 // See Also
 //
 // See also the operator function SortByNameFunc in
-//   "github.com/vladimirvivien/automi/operators/batch"
+//   "github.com/gofunky/automi/operators/batch"
 func (s *Stream) SortByName(name string) *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.SortByNameFunc(name))
@@ -110,7 +110,7 @@ func (s *Stream) SortByName(name string) *Stream {
 // See Also
 //
 // See also the operator function SortByPosFunc in
-//   "github.com/vladimirvivien/automi/operators/batch"
+//   "github.com/gofunky/automi/operators/batch"
 func (s *Stream) SortByPos(pos int) *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.SortByPosFunc(pos))
@@ -123,7 +123,7 @@ func (s *Stream) SortByPos(pos int) *Stream {
 // See Also
 //
 // See also the operator function SortWithFunc in
-//   "github.com/vladimirvivien/automi/operators/batch"
+//   "github.com/gofunky/automi/operators/batch"
 func (s *Stream) SortWith(f func(batch interface{}, i, j int) bool) *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.SortWithFunc(f))
@@ -137,7 +137,7 @@ func (s *Stream) SortWith(f func(batch interface{}, i, j int) bool) *Stream {
 // See Also
 //
 // See also the operator function SumFunc in
-//   "github.com/vladimirvivien/automi/operators/batch"
+//   "github.com/gofunky/automi/operators/batch"
 func (s *Stream) Sum() *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.SumFunc())
@@ -156,7 +156,7 @@ func (s *Stream) Sum() *Stream {
 // See Also
 //
 // See also the operator function SumByKeyFunc in
-//   "github.com/vladimirvivien/automi/operators/batch"
+//   "github.com/gofunky/automi/operators/batch"
 func (s *Stream) SumByKey(key interface{}) *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.SumByKeyFunc(key))
@@ -177,7 +177,7 @@ func (s *Stream) SumAllKeys() *Stream {
 // See Also
 //
 // See also the operator function SumByNameFunc in
-//   "github.com/vladimirvivien/automi/operator/batch"
+//   "github.com/gofunky/automi/operator/batch"
 func (s *Stream) SumByName(name string) *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.SumByNameFunc(name))
@@ -192,7 +192,7 @@ func (s *Stream) SumByName(name string) *Stream {
 // See Also
 //
 // See also the operator function SumByPosFunc in
-//   "github.com/vladimirvivien/automi/operator/batch"
+//   "github.com/gofunky/automi/operator/batch"
 func (s *Stream) SumByPos(pos int) *Stream {
 	operator := unary.New(s.ctx)
 	operator.SetOperation(batch.SumByPosFunc(pos))

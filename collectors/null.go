@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/go-faces/logger"
-	autoctx "github.com/vladimirvivien/automi/api/context"
-	"github.com/vladimirvivien/automi/util"
+	autoctx "github.com/gofunky/automi/api/context"
+	"github.com/gofunky/automi/util"
 )
 
 type NullCollector struct {

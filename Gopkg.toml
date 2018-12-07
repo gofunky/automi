@@ -26,7 +26,3 @@
 [[constraint]]
   branch = "master"
   name = "github.com/go-faces/logger"
-
-[prune]
-  go-tests = true
-  unused-packages = true
