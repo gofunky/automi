@@ -2,8 +2,13 @@
 
 A stream API for the Go programming language (alpha)
 
+[![Build Status](https://travis-ci.com/gofunky/automi.svg)](https://travis-ci.com/gofunky/automi)
 [![GoDoc](https://godoc.org/github.com/gofunky/automi?status.svg)](https://godoc.org/github.com/gofunky/automi)
-[![Build Status](https://travis-ci.org/vladimirvivien/automi.svg)](https://travis-ci.org/vladimirvivien/automi)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3f41a74977b043979f17c51b5994309a)](https://www.codacy.com/app/gofunky/automi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gofunky/automi&amp;utm_campaign=Badge_Grade)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gofunky/automi)](https://goreportcard.com/report/github.com/gofunky/automi)
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=gofunky/automi)](https://dependabot.com)
+[![GitHub License](https://img.shields.io/github/license/gofunky/automi.svg)](https://github.com/gofunky/automi/blob/master/LICENSE)
+[![GitHub last commit](https://img.shields.io/github/last-commit/gofunky/automi.svg)](https://github.com/gofunky/automi/commits/master)
 
 Automi is an API for processing streams of data using idiomatic Go.  Using Automi, programs can process streaming of data chunks by composing stages of operations that are applied to each element of the stream.  
 
