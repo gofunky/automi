@@ -3,8 +3,10 @@ package stream
 import (
 	"context"
 	"fmt"
+	"go/types"
 	"reflect"
 
+	"github.com/deckarep/golang-set"
 	"github.com/go-faces/logger"
 	autoctx "github.com/gofunky/automi/api/context"
 	"github.com/gofunky/automi/api/tuple"
@@ -62,21 +64,23 @@ func (r *StreamOperator) Exec() (err error) {
 				if !opened {
 					return
 				}
-				itemType := reflect.TypeOf(item)
 				itemVal := reflect.ValueOf(item)
 
-				// unpack array, slice, map into individual item stream
-				switch itemType.Kind() {
-				case reflect.Array, reflect.Slice:
+				switch item.(type) {
+				case types.Array, types.Slice:
 					for i := 0; i < itemVal.Len(); i++ {
 						j := itemVal.Index(i)
 						r.output <- j.Interface()
 					}
-				// unpack map as tuple.KV{key, value}
-				case reflect.Map:
+				case types.Map:
 					for _, key := range itemVal.MapKeys() {
 						val := itemVal.MapIndex(key)
 						r.output <- tuple.KV{key.Interface(), val.Interface()}
+					}
+				case mapset.Set:
+					itemSet := item.(mapset.Set)
+					for subItem := range itemSet.Iter() {
+						r.output <- subItem
 					}
 				default:
 					r.output <- item

@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/deckarep/golang-set"
+  packages = ["."]
+  revision = "cbaa98ba5575e67703b32b4b19f73c91f3c4159e"
+  version = "v1.7.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/go-faces/logger"
   packages = ["."]
@@ -10,6 +16,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bf696c177150f73d5c4e5a444457fcecc678851fb0e58183966e87102f70a6b8"
+  inputs-digest = "e1737bf6f6d42ddf7b5098cb243d8e5fb5d6e352df3bb2178d374cd455569bd1"
   solver-name = "gps-cdcl"
   solver-version = 1
