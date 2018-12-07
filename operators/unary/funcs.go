@@ -3,6 +3,7 @@ package unary
 import (
 	"context"
 	"fmt"
+	"github.com/deckarep/golang-set"
 	"reflect"
 
 	"github.com/gofunky/automi/api"
@@ -72,13 +73,21 @@ func MapFunc(f interface{}) (api.UnFunc, error) {
 //   func (T) R - where R is the original item, R is a slice of decostructed items
 // The slice returned should be restreamed by placing each item onto the stream for
 // downstream processing.
+// Besides slices, arrays, maps, and sets are also accepted.
 func FlatMapFunc(f interface{}) (api.UnFunc, error) {
 	fntype := reflect.TypeOf(f)
 	if err := isUnaryFuncForm(fntype); err != nil {
 		return nil, err
 	}
-	if fntype.Out(0).Kind() != reflect.Slice {
-		return nil, fmt.Errorf("FlatMap function must return a slice")
+	var test = fntype.Out(0)
+	if fntype.Out(0) != reflect.TypeOf((*mapset.Set)(nil)).Elem() {
+		switch fntype.Out(0).Kind() {
+		case reflect.Slice, reflect.Array, reflect.Map:
+			// Do nothing
+			fmt.Println(test)
+		default:
+			return nil, fmt.Errorf("FlatMap function must return a slice, array, map, or set, actual type %v", fntype.Out(0).Name())
+		}
 	}
 
 	fnval := reflect.ValueOf(f)

@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"github.com/deckarep/golang-set"
 	"strings"
 	"testing"
 	"time"
@@ -86,6 +87,74 @@ func TestStream_FlatMap(t *testing.T) {
 	snk := collectors.Slice()
 	strm := New(src).FlatMap(func(data string) []string {
 		return strings.Split(data, " ")
+	}).Into(snk)
+
+	count := 0
+	expected := 20
+
+	select {
+	case err := <-strm.Open():
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, data := range snk.Get() {
+			vals := data.(string)
+			count += len(vals)
+		}
+
+		if count != expected {
+			t.Fatalf("Expecting %d words, got %d", expected, count)
+		}
+	case <-time.After(50 * time.Millisecond):
+		t.Fatal("Waited too long ...")
+	}
+}
+
+func TestStream_FlatMap_WithSet(t *testing.T) {
+	src := emitters.Slice([]string{"HELLO WORLD", "HOW ARE YOU?"})
+	snk := collectors.Slice()
+	strm := New(src).FlatMap(func(data string) (result mapset.Set) {
+		items := strings.Split(data, " ")
+		result = mapset.NewSet()
+		for _, item := range items {
+			result.Add(item)
+		}
+		return result
+	}).Into(snk)
+
+	count := 0
+	expected := 20
+
+	select {
+	case err := <-strm.Open():
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, data := range snk.Get() {
+			vals := data.(string)
+			count += len(vals)
+		}
+
+		if count != expected {
+			t.Fatalf("Expecting %d words, got %d", expected, count)
+		}
+	case <-time.After(50 * time.Millisecond):
+		t.Fatal("Waited too long ...")
+	}
+}
+
+func TestStream_FlatMap_WithMap(t *testing.T) {
+	src := emitters.Slice([]string{"HELLO WORLD", "HOW ARE YOU?"})
+	snk := collectors.Slice()
+	strm := New(src).FlatMap(func(data string) (result map[interface{}]interface{}) {
+		items := strings.Split(data, " ")
+		result = make(map[interface{}]interface{})
+		for i, item := range items {
+			result[i] = item
+		}
+		return result
 	}).Into(snk)
 
 	count := 0

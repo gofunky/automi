@@ -3,10 +3,9 @@ package stream
 import (
 	"context"
 	"fmt"
-	"go/types"
+	"github.com/deckarep/golang-set"
 	"reflect"
 
-	"github.com/deckarep/golang-set"
 	"github.com/go-faces/logger"
 	autoctx "github.com/gofunky/automi/api/context"
 	"github.com/gofunky/automi/api/tuple"
@@ -64,26 +63,31 @@ func (r *StreamOperator) Exec() (err error) {
 				if !opened {
 					return
 				}
+
 				itemVal := reflect.ValueOf(item)
 
 				switch item.(type) {
-				case types.Array, types.Slice:
-					for i := 0; i < itemVal.Len(); i++ {
-						j := itemVal.Index(i)
-						r.output <- j.Interface()
-					}
-				case types.Map:
-					for _, key := range itemVal.MapKeys() {
-						val := itemVal.MapIndex(key)
-						r.output <- tuple.KV{key.Interface(), val.Interface()}
-					}
 				case mapset.Set:
 					itemSet := item.(mapset.Set)
 					for subItem := range itemSet.Iter() {
 						r.output <- subItem
 					}
 				default:
-					r.output <- item
+					itemType := reflect.TypeOf(item)
+					switch itemType.Kind() {
+					case reflect.Array, reflect.Slice:
+						for i := 0; i < itemVal.Len(); i++ {
+							j := itemVal.Index(i)
+							r.output <- j.Interface()
+						}
+					case reflect.Map:
+						for _, key := range itemVal.MapKeys() {
+							val := itemVal.MapIndex(key)
+							r.output <- tuple.KV{key.Interface(), val.Interface()}
+						}
+					default:
+						r.output <- item
+					}
 				}
 			}
 		}
