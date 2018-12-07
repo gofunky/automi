@@ -2,6 +2,7 @@ package stream
 
 import (
 	"github.com/deckarep/golang-set"
+	"github.com/gofunky/automi/api/tuple"
 	"strings"
 	"testing"
 	"time"
@@ -158,7 +159,7 @@ func TestStream_FlatMap_WithMap(t *testing.T) {
 	}).Into(snk)
 
 	count := 0
-	expected := 20
+	expected := 10
 
 	select {
 	case err := <-strm.Open():
@@ -167,7 +168,7 @@ func TestStream_FlatMap_WithMap(t *testing.T) {
 		}
 
 		for _, data := range snk.Get() {
-			vals := data.(string)
+			vals := data.(tuple.KV)
 			count += len(vals)
 		}
 
