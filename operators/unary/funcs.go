@@ -79,12 +79,10 @@ func FlatMapFunc(f interface{}) (api.UnFunc, error) {
 	if err := isUnaryFuncForm(fntype); err != nil {
 		return nil, err
 	}
-	var test = fntype.Out(0)
 	if fntype.Out(0) != reflect.TypeOf((*mapset.Set)(nil)).Elem() {
 		switch fntype.Out(0).Kind() {
 		case reflect.Slice, reflect.Array, reflect.Map:
 			// Do nothing
-			fmt.Println(test)
 		default:
 			return nil, fmt.Errorf("FlatMap function must return a slice, array, map, or set, actual type %v", fntype.Out(0).Name())
 		}
