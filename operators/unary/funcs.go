@@ -21,6 +21,11 @@ func ProcessFunc(f interface{}) (api.UnFunc, error) {
 		return nil, err
 	}
 
+	if fntype.NumIn() == 2 && fntype.Out(1) != reflect.TypeOf((error)(nil)) {
+		return nil, fmt.Errorf("ProcessFunc function can optionally only return an error as second return type, "+
+			"actual type %v", fntype.Out(1).Name())
+	}
+
 	fnval := reflect.ValueOf(f)
 
 	return api.UnFunc(func(ctx context.Context, data interface{}) (result interface{}, err error) {
@@ -48,6 +53,11 @@ func FilterFunc(f interface{}) (api.UnFunc, error) {
 	// ensure bool ret type
 	if fntype.Out(0).Kind() != reflect.Bool {
 		panic("Filter function must return a bool type")
+	}
+
+	if fntype.NumIn() == 2 && fntype.Out(1) != reflect.TypeOf((error)(nil)) {
+		return nil, fmt.Errorf("FilterFunc function can optionally only return an error as second return type, "+
+			"actual type %v", fntype.Out(1).Name())
 	}
 
 	fnval := reflect.ValueOf(f)
@@ -95,13 +105,9 @@ func FlatMapFunc(f interface{}) (api.UnFunc, error) {
 			return nil, fmt.Errorf("FlatMap function must return a slice, array, map, or set, actual type %v", fntype.Out(0).Name())
 		}
 	}
-	if fntype.Out(0) != reflect.TypeOf((*mapset.Set)(nil)).Elem() {
-		switch fntype.Out(0).Kind() {
-		case reflect.Slice, reflect.Array, reflect.Map:
-			// Do nothing
-		default:
-			return nil, fmt.Errorf("FlatMap function must return a slice, array, map, or set, actual type %v", fntype.Out(0).Name())
-		}
+	if fntype.NumIn() == 2 && fntype.Out(1) != reflect.TypeOf((error)(nil)) {
+		return nil, fmt.Errorf("FlatMap function can optionally only return an error as second return type, "+
+			"actual type %v", fntype.Out(1).Name())
 	}
 
 	fnval := reflect.ValueOf(f)
@@ -117,7 +123,7 @@ func FlatMapFunc(f interface{}) (api.UnFunc, error) {
 	}), nil
 }
 
-// isUnaryFuncForm ensures type is a function of form func(in)out.
+// isUnaryFuncForm ensures type is a function of form func(in)out or func(in)(out, error).
 func isUnaryFuncForm(ftype reflect.Type) error {
 	// enforce f with sig fn(in)out
 	switch ftype.Kind() {
@@ -125,11 +131,13 @@ func isUnaryFuncForm(ftype reflect.Type) error {
 		if ftype.NumIn() != 1 {
 			return fmt.Errorf("unary function must take one parameter")
 		}
-		if ftype.NumOut() != 1 {
-			return fmt.Errorf("unary func must return one param")
+		if ftype.NumOut() == 2 {
+			if ftype.Out(1).Kind().String() != "error" {
+				return fmt.Errorf("unary func must return one param or two with the second being an error")
+			}
 		}
 	default:
-		return fmt.Errorf("requires unary function of type func(T)R")
+		return fmt.Errorf("requires unary function of type func(T)R or func(T)(R, error)")
 	}
 	return nil
 }
