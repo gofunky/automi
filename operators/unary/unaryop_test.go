@@ -27,8 +27,8 @@ func TestUnaryOp_New(t *testing.T) {
 }
 func TestUnaryOp_Params(t *testing.T) {
 	o := New(context.Background())
-	op := api.UnFunc(func(ctx context.Context, data interface{}) interface{} {
-		return nil
+	op := api.UnFunc(func(ctx context.Context, data interface{}) (interface{}, error) {
+		return nil, nil
 	})
 	in := make(chan interface{})
 
@@ -56,10 +56,10 @@ func TestUnaryOp_Exec(t *testing.T) {
 	ctx, _ := context.WithCancel(context.Background())
 	o := New(ctx)
 
-	op := api.UnFunc(func(ctx context.Context, data interface{}) interface{} {
+	op := api.UnFunc(func(ctx context.Context, data interface{}) (interface{}, error) {
 		values := data.([]string)
 		t.Logf("Processing data %v, sending %d", values, len(values))
-		return len(values)
+		return len(values), nil
 	})
 	o.SetOperation(op)
 
@@ -122,11 +122,11 @@ func BenchmarkUnaryOp_Exec(b *testing.B) {
 	counter := 0
 	var m sync.RWMutex
 
-	op := api.UnFunc(func(ctx context.Context, data interface{}) interface{} {
+	op := api.UnFunc(func(ctx context.Context, data interface{}) (interface{}, error) {
 		m.Lock()
 		counter++
 		m.Unlock()
-		return data
+		return data, nil
 	})
 	o.SetOperation(op)
 
@@ -134,7 +134,7 @@ func BenchmarkUnaryOp_Exec(b *testing.B) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		for _ = range o.GetOutput() {
+		for range o.GetOutput() {
 		}
 	}()
 

@@ -2,6 +2,7 @@ package batch
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sort"
 	"strings"
@@ -16,13 +17,13 @@ import (
 // The function returns type
 //   []map[interface{}][]interface{}
 func GroupByPosFunc(pos int) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		group := make(map[interface{}][]interface{})
@@ -57,7 +58,7 @@ func GroupByPosFunc(pos int) api.UnFunc {
 			default: // TODO handle type mismatch
 			}
 		}
-		return []map[interface{}][]interface{}{group}
+		return []map[interface{}][]interface{}{group}, nil
 	})
 }
 
@@ -69,13 +70,13 @@ func GroupByPosFunc(pos int) api.UnFunc {
 // More specifically a value:
 //   []map[int]float64{{pos: sum}} where sum is the calculated sum.
 func SumByPosFunc(pos int) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		result := make(map[int]float64)
@@ -96,7 +97,7 @@ func SumByPosFunc(pos int) api.UnFunc {
 			default: // TODO handle type mismatch
 			}
 		}
-		return []map[int]float64{result}
+		return []map[int]float64{result}, nil
 	})
 
 }
@@ -108,13 +109,13 @@ func SumByPosFunc(pos int) api.UnFunc {
 //   []map[interface{}][]interface{}
 // Where the map that uses the field values as key to group the items.
 func GroupByNameFunc(name string) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 		name = strings.Title(name) // avoid unexported field panic
 		group := make(map[interface{}][]interface{})
@@ -143,10 +144,11 @@ func GroupByNameFunc(name string) api.UnFunc {
 					groupItems(itemKey, mapItem, group)
 				}
 
-			default: //TODO handle type mismatch
+			default:
+				return nil, fmt.Errorf("unexpected slice type: %s", item.Type().String())
 			}
 		}
-		return []map[interface{}][]interface{}{group}
+		return []map[interface{}][]interface{}{group}, nil
 	})
 }
 
@@ -160,13 +162,13 @@ func GroupByNameFunc(name string) api.UnFunc {
 //   []map[string]float64{{name:sum}}
 // Where sum is the total calculated sum for fields name.
 func SumByNameFunc(name string) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		name = strings.Title(name) // avoid unexported field panic
@@ -202,12 +204,13 @@ func SumByNameFunc(name string) api.UnFunc {
 						}
 					}
 				}
-			default: //TODO handle type mismatch
+			default:
+				return nil, fmt.Errorf("unexpected slice type: %s", item.Type().String())
 
 			}
 
 		}
-		return []map[string]float64{result}
+		return []map[string]float64{result}, nil
 	})
 }
 
@@ -218,13 +221,13 @@ func SumByNameFunc(name string) api.UnFunc {
 //   []map[interface{}][]interface{}
 // Where items with simlar K values are assigned the same key in the result map.
 func GroupByKeyFunc(key interface{}) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		group := make(map[interface{}][]interface{})
@@ -251,12 +254,13 @@ func GroupByKeyFunc(key interface{}) api.UnFunc {
 						groupItems(itemKey, mapItem, group)
 					}
 
-				default: //TODO handle type mismatch
+				default:
+					return nil, fmt.Errorf("unexpected slice type: %s", item.Type().String())
 				}
 			}
 		}
 
-		return []map[interface{}][]interface{}{group}
+		return []map[interface{}][]interface{}{group}, nil
 	})
 }
 
@@ -271,13 +275,13 @@ func GroupByKeyFunc(key interface{}) api.UnFunc {
 // Where sum is the total calculated sum for a given key.
 // If key == nil, it returns sums for all keys.
 func SumByKeyFunc(key interface{}) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		result := make(map[interface{}]float64)
@@ -312,12 +316,13 @@ func SumByKeyFunc(key interface{}) api.UnFunc {
 							}
 						}
 					}
-				default: //TODO handle type mismatch
+				default:
+					return nil, fmt.Errorf("unexpected slice type: %s", item.Type().String())
 				}
 			}
 		}
 
-		return []map[interface{}]float64{result}
+		return []map[interface{}]float64{result}, nil
 	})
 }
 
@@ -329,13 +334,13 @@ func SumByKeyFunc(key interface{}) api.UnFunc {
 //  [][]floats
 // The function returns the sum as a float64
 func SumFunc() api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		var sum float64
@@ -373,7 +378,7 @@ func SumFunc() api.UnFunc {
 			}
 		}
 
-		return sum
+		return sum, nil
 
 	})
 }
@@ -387,13 +392,13 @@ func SumFunc() api.UnFunc {
 //   - Use package sort and a Less function to compare v[i] and v[i+1]
 // The function returns the sorted slice
 func SortFunc() api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		// use sort.Sort() to sepecify a Less function
@@ -403,7 +408,7 @@ func SortFunc() api.UnFunc {
 			return util.IsLess(itemI, itemJ)
 		})
 
-		return dataVal.Interface()
+		return dataVal.Interface(), nil
 	})
 }
 
@@ -416,13 +421,13 @@ func SortFunc() api.UnFunc {
 //   - Use package sort and a Less function to compare v[i][pos] and v[i+1][pos]
 // The function returns the sorted slice
 func SortByPosFunc(pos int) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		// use sort.Sort() to sepecify a Less function
@@ -444,7 +449,7 @@ func SortByPosFunc(pos int) api.UnFunc {
 			return false
 		})
 
-		return dataVal.Interface()
+		return dataVal.Interface(), nil
 	})
 }
 
@@ -454,13 +459,13 @@ func SortByPosFunc(pos int) api.UnFunc {
 // For each struct s, field s.name must be of comparable values.
 // The function returns a sorted []T
 func SortByNameFunc(name string) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		name = strings.Title(name) // cap name to avoid panic
@@ -481,7 +486,7 @@ func SortByNameFunc(name string) api.UnFunc {
 			return false
 		})
 
-		return dataVal.Interface()
+		return dataVal.Interface(), nil
 	})
 }
 
@@ -490,13 +495,13 @@ func SortByNameFunc(name string) api.UnFunc {
 //   []map[K]V - where K is a comparable type
 // The function returns sorted []map[K]
 func SortByKeyFunc(key interface{}) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		sort.Slice(dataVal.Interface(), func(i, j int) bool {
@@ -515,7 +520,7 @@ func SortByKeyFunc(key interface{}) api.UnFunc {
 
 			return false
 		})
-		return dataVal.Interface()
+		return dataVal.Interface(), nil
 	})
 }
 
@@ -528,26 +533,26 @@ func SortByKeyFunc(key interface{}) api.UnFunc {
 // The specified function should follow the Less function convention of the
 // sort package when compairing values from rows i, j.
 func SortWithFunc(f func(batch interface{}, i, j int) bool) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
 		dataType := reflect.TypeOf(param0)
 		dataVal := reflect.ValueOf(param0)
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0 // ignores the data
+			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
 		}
 
 		sort.Slice(dataVal.Interface(), func(i, j int) bool {
 			return f(dataVal.Interface(), i, j)
 		})
 
-		return dataVal.Interface()
+		return dataVal.Interface(), nil
 	})
 }
 
 func ForAll(f func(ctx context.Context, batch interface{}) map[interface{}][]interface{}) api.UnFunc {
-	return api.UnFunc(func(ctx context.Context, param0 interface{}) interface{} {
-		return f(ctx, param0)
+	return api.UnFunc(func(ctx context.Context, param0 interface{}) (interface{}, error) {
+		return f(ctx, param0), nil
 	})
 }
 

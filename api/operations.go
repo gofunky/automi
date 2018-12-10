@@ -4,14 +4,14 @@ import "context"
 
 // UnOperation interface represents unary operations (i.e. Map, Filter, etc)
 type UnOperation interface {
-	Apply(ctx context.Context, data interface{}) interface{}
+	Apply(ctx context.Context, data interface{}) (interface{}, error)
 }
 
 // UnFunc implements UnOperation as type func (context.Context, interface{})
-type UnFunc func(context.Context, interface{}) interface{}
+type UnFunc func(context.Context, interface{}) (interface{}, error)
 
 // Apply implements UnOperation.Apply method
-func (f UnFunc) Apply(ctx context.Context, data interface{}) interface{} {
+func (f UnFunc) Apply(ctx context.Context, data interface{}) (interface{}, error) {
 	return f(ctx, data)
 }
 

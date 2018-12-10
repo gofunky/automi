@@ -12,7 +12,7 @@ import (
 // ProcessFunc returns a unary function which applies the specified
 // user-defined function that processes data items from upstream and
 // returns a result value. The provided function must be of type:
-//   func(T) R
+//   func(T) (R, error)
 //   where T is the type of incoming item
 //   R the type of returned processed item
 func ProcessFunc(f interface{}) (api.UnFunc, error) {
@@ -23,17 +23,21 @@ func ProcessFunc(f interface{}) (api.UnFunc, error) {
 
 	fnval := reflect.ValueOf(f)
 
-	return api.UnFunc(func(ctx context.Context, data interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, data interface{}) (result interface{}, err error) {
 		arg0 := reflect.ValueOf(data)
-		result := fnval.Call([]reflect.Value{arg0})[0]
-		return result.Interface()
+		call := fnval.Call([]reflect.Value{arg0})
+		result = call[0].Interface()
+		if len(call) > 1 {
+			err = call[1].Interface().(error)
+		}
+		return
 	}), nil
 }
 
 // FilterFunc returns a unary function (api.UnFunc) which applies the user-defined
 // filtering to apply predicates that filters out data items from being included
 // in the downstream.  The provided user-defined function must be of type:
-//   func(T)bool - where T is the type of incoming data item, bool is the value of the predicate
+//   func(T) (bool, error) - where T is the type of incoming data item, bool is the value of the predicate
 // When the user-defined function returns false, the current processed data item will not
 // be placed in the downstream processing.
 func FilterFunc(f interface{}) (api.UnFunc, error) {
@@ -48,21 +52,25 @@ func FilterFunc(f interface{}) (api.UnFunc, error) {
 
 	fnval := reflect.ValueOf(f)
 
-	return api.UnFunc(func(ctx context.Context, data interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, data interface{}) (interface{}, error) {
 		arg0 := reflect.ValueOf(data)
-		result := fnval.Call([]reflect.Value{arg0})[0]
-		predicate := result.Bool()
-		if !predicate {
-			return nil
+		call := fnval.Call([]reflect.Value{arg0})
+		if len(call) > 1 {
+			if err := call[1].Interface().(error); err != nil {
+				return nil, err
+			}
 		}
-		return data
+		if predicate := call[0].Bool(); !predicate {
+			return nil, nil
+		}
+		return data, nil
 	}), nil
 }
 
 // MapFunc returns an unary function which applies the user-defined function which
 // maps, one-to-one, the incomfing value to a new value.  The user-defined function
 // must be of type:
-//   func(T) R - where T is the incoming item, R is the type of the returned mapped item
+//   func(T) (R, error) - where T is the incoming item, R is the type of the returned mapped item
 func MapFunc(f interface{}) (api.UnFunc, error) {
 	return ProcessFunc(f)
 }
@@ -70,7 +78,7 @@ func MapFunc(f interface{}) (api.UnFunc, error) {
 // FlatMapFunc returns an unary function which applies a user-defined function which
 // takes incoming comsite items and deconstruct them into individual items which can
 // then be re-streamed.  The type for the user-defined function is:
-//   func (T) R - where R is the original item, R is a slice of decostructed items
+//   func (T) (R, error) - where R is the original item, R is a slice of decostructed items
 // The slice returned should be restreamed by placing each item onto the stream for
 // downstream processing.
 // Besides slices, arrays, maps, and sets are also accepted.
@@ -87,13 +95,25 @@ func FlatMapFunc(f interface{}) (api.UnFunc, error) {
 			return nil, fmt.Errorf("FlatMap function must return a slice, array, map, or set, actual type %v", fntype.Out(0).Name())
 		}
 	}
+	if fntype.Out(0) != reflect.TypeOf((*mapset.Set)(nil)).Elem() {
+		switch fntype.Out(0).Kind() {
+		case reflect.Slice, reflect.Array, reflect.Map:
+			// Do nothing
+		default:
+			return nil, fmt.Errorf("FlatMap function must return a slice, array, map, or set, actual type %v", fntype.Out(0).Name())
+		}
+	}
 
 	fnval := reflect.ValueOf(f)
 
-	return api.UnFunc(func(ctx context.Context, data interface{}) interface{} {
+	return api.UnFunc(func(ctx context.Context, data interface{}) (result interface{}, err error) {
 		arg0 := reflect.ValueOf(data)
-		result := fnval.Call([]reflect.Value{arg0})[0]
-		return result.Interface()
+		call := fnval.Call([]reflect.Value{arg0})
+		result = call[0].Interface()
+		if len(call) > 1 {
+			err = call[1].Interface().(error)
+		}
+		return
 	}), nil
 }
 

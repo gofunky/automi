@@ -2,7 +2,9 @@ package unary
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/uber-go/atomic"
 	"sync"
 
 	"github.com/go-faces/logger"
@@ -82,6 +84,8 @@ func (o *UnaryOperator) Exec() (err error) {
 		o.concurrency = 1
 	}
 
+	var atomicErr atomic.Error
+
 	go func() {
 		defer func() {
 			util.Log(o.log, "unary operator closing")
@@ -95,7 +99,10 @@ func (o *UnaryOperator) Exec() (err error) {
 		for i := 0; i < o.concurrency; i++ { // workers
 			go func(wg *sync.WaitGroup) {
 				defer wg.Done()
-				o.doProc(o.ctx)
+				if err := o.doProc(o.ctx); err != nil {
+					atomicErr.Store(err)
+					o.cancelled = true
+				}
 			}(&barrier)
 		}
 
@@ -116,13 +123,14 @@ func (o *UnaryOperator) Exec() (err error) {
 			return
 		}
 	}()
-	return nil
+	return atomicErr.Load()
 }
 
-func (o *UnaryOperator) doProc(ctx context.Context) {
+func (o *UnaryOperator) doProc(ctx context.Context) error {
 	if o.op == nil {
-		util.Log(o.log, "unary operator missing operation")
-		return
+		err := errors.New("unary operator missing operation")
+		util.Log(o.log, err)
+		return err
 	}
 	exeCtx, cancel := context.WithCancel(ctx)
 
@@ -131,10 +139,14 @@ func (o *UnaryOperator) doProc(ctx context.Context) {
 		// process incoming item
 		case item, opened := <-o.input:
 			if !opened {
-				return
+				return nil
 			}
 
-			result := o.op.Apply(exeCtx, item)
+			result, err := o.op.Apply(exeCtx, item)
+			if err != nil {
+				util.Log(o.log, err)
+				return err
+			}
 
 			switch val := result.(type) {
 			case nil:
@@ -153,7 +165,7 @@ func (o *UnaryOperator) doProc(ctx context.Context) {
 			cancel()
 			o.cancelled = true
 			o.mutex.Unlock()
-			return
+			return nil
 		}
 	}
 }

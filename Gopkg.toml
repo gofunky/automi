@@ -26,3 +26,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/go-faces/logger"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/uber-go/atomic"

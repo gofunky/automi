@@ -18,7 +18,7 @@ func TestUnaryFunc_Process(t *testing.T) {
 	sum := 0
 	ctx := context.TODO()
 	for _, v := range []int{2, 4, 6, 8} {
-		result := op.Apply(ctx, v)
+		result, _ := op.Apply(ctx, v)
 		sum += result.(int)
 	}
 
@@ -38,7 +38,7 @@ func TestUnaryFunc_Filter(t *testing.T) {
 	ctx := context.TODO()
 	var strings []string
 	for _, v := range []string{"Mon", "Wed", "Tr", "Sun", "Tu", "Sat"} {
-		result := op.Apply(ctx, v)
+		result, _ := op.Apply(ctx, v)
 		str, ok := result.(string)
 		if ok {
 			strings = append(strings, str)
@@ -61,7 +61,7 @@ func TestUnaryFunc_Map(t *testing.T) {
 	str := new(bytes.Buffer)
 	ctx := context.TODO()
 	for _, v := range []rune{'h', 'e', 'l', 'l', 'o'} {
-		result := op.Apply(ctx, v)
+		result, _ := op.Apply(ctx, v)
 		chr := result.(rune)
 		str.WriteRune(chr)
 	}
@@ -79,7 +79,7 @@ func TestUnaryFunc_FlatMap(t *testing.T) {
 		t.Fatal(err)
 	}
 	ctx := context.TODO()
-	result := op.Apply(ctx, "hello")
+	result, _ := op.Apply(ctx, "hello")
 	slice := result.([]rune)
 	if len(slice) != 5 {
 		t.Fatal("unexpected result from FlatMapFunc:", len(slice))

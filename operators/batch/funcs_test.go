@@ -8,11 +8,11 @@ import (
 func TestBatchFuncs_GroupByPos_WithSlice(t *testing.T) {
 	op := GroupByPosFunc(0)
 	data := [][]string{
-		[]string{"aa", "absolute", "resolute"},
-		[]string{"ab", "merchant", "errand", "elegant"},
-		[]string{"aa", "classic", "magic", "toxic"},
+		{"aa", "absolute", "resolute"},
+		{"ab", "merchant", "errand", "elegant"},
+		{"aa", "classic", "magic", "toxic"},
 	}
-	result := op.Apply(context.TODO(), data)
+	result, _ := op.Apply(context.TODO(), data)
 	mapVal, ok := result.([]map[interface{}][]interface{})
 	if !ok {
 		t.Fatal("unexpected type from GroupByFunc")
@@ -30,11 +30,11 @@ func TestBatchFuncs_GroupByPos_WithSlice(t *testing.T) {
 func TestBatchFuncs_GroupByPos_WithArray(t *testing.T) {
 	op := GroupByPosFunc(0)
 	data := [][4]string{
-		[4]string{"aa", "absolute", "resolute", "cantolope"},
-		[4]string{"ab", "merchant", "errand", "elegant"},
-		[4]string{"aa", "classic", "magic", "toxic"},
+		{"aa", "absolute", "resolute", "cantolope"},
+		{"ab", "merchant", "errand", "elegant"},
+		{"aa", "classic", "magic", "toxic"},
 	}
-	result := op.Apply(context.TODO(), data)
+	result, _ := op.Apply(context.TODO(), data)
 	mapVal, ok := result.([]map[interface{}][]interface{})
 	if !ok {
 		t.Fatal("unexpected type from GroupByFunc")
@@ -58,7 +58,7 @@ func TestBatchFuncs_GroupByName(t *testing.T) {
 		{"Enola", "plane", "propeller"},
 		{"Memphis", "plane", "propeller"},
 	}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 	group := val.([]map[interface{}][]interface{})
 	planes := group[0]["plane"]
 	if len(planes) != 3 {
@@ -71,7 +71,7 @@ func TestBatchFuncs_GroupByName(t *testing.T) {
 
 	// invalid field name
 	op = GroupByNameFunc("method")
-	val = op.Apply(context.TODO(), data)
+	val, _ = op.Apply(context.TODO(), data)
 	if len(val.([]map[interface{}][]interface{})[0]) != 0 {
 		t.Fatal("expecting a group of zero elements, but the result map has elements")
 	}
@@ -87,7 +87,7 @@ func TestBatchFuncs_GroupByKey(t *testing.T) {
 		{"vehicle": "voyager1", "kind": "satellite", "engine": "gravity"},
 		{"vehicle": "titanic", "kind": "boat", "engine": "diesel"},
 	}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 	group := val.([]map[interface{}][]interface{})
 	planes := group[0]["plane"]
 	if len(planes) != 2 {
@@ -98,11 +98,10 @@ func TestBatchFuncs_GroupByKey(t *testing.T) {
 		t.Fatal("expecting group to have 1 truck, got ", len(group[0]["boat"]))
 	}
 
-	// invalid field name
 	op = GroupByNameFunc("type")
-	val = op.Apply(context.TODO(), data)
-	if len(val.([]map[interface{}][]interface{})[0]) != 0 {
-		t.Fatal("expecting a group of zero elements, but the result map has elements")
+	val, err := op.Apply(context.TODO(), data)
+	if err == nil {
+		t.Fatal("expecting an error because of an invalid field name")
 	}
 }
 
@@ -113,14 +112,14 @@ func TestBatchFuncs_SumInts(t *testing.T) {
 		{40, 60, 90},
 		{0, 80, 30},
 	}
-	result := op.Apply(context.TODO(), data)
+	result, _ := op.Apply(context.TODO(), data)
 	if result.(float64) != 400 {
 		t.Error("expecting 400, but got ", result)
 	}
 
 	data2 := []float32{10.0, 70.0, 20.0, 40.0, 60, 90, 0, 80, 30}
 
-	result = op.Apply(context.TODO(), data2)
+	result, _ = op.Apply(context.TODO(), data2)
 	if result.(float64) != 400 {
 		t.Error("expecting 400, but got ", result)
 	}
@@ -134,7 +133,7 @@ func TestBatchFuncs_SumByPos(t *testing.T) {
 		{"CA", "D", 4},
 	}
 
-	result := op.Apply(context.TODO(), data)
+	result, _ := op.Apply(context.TODO(), data)
 	val := result.([]map[int]float64)
 
 	if val[0][2] != 10 {
@@ -154,7 +153,7 @@ func TestBatchFuncs_SumByName(t *testing.T) {
 		{"Enola", "plane", "propeller", 12},
 		{"Memphis", "plane", "propeller", 48},
 	}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 	result := val.([]map[string]float64)
 
 	if result[0]["Size"] != 88 {
@@ -181,7 +180,7 @@ func TestBatchFuncs_SumByName_All(t *testing.T) {
 			Sizes   []int
 		}{"Memphis", 8, []int{2, 4}},
 	}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 	result := val.([]map[string]float64)
 
 	if result[0]["Sizes"] != 14 {
@@ -203,7 +202,7 @@ func TestBatchFuncs_SumByKey(t *testing.T) {
 		{"vehicle": 1, "weight": 5},
 		{"vehicle": 5},
 	}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 	result := val.([]map[interface{}]float64)
 
 	if result[0]["weight"] != 13 {
@@ -220,7 +219,7 @@ func TestBatchFuncs_SumByKey_All(t *testing.T) {
 		{"vehicle": 1, "weight": 5},
 		{"vehicle": []int{5, 5, 2}},
 	}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 	result := val.([]map[interface{}]float64)
 
 	if result[0]["vehicle"] != 18 {
@@ -234,7 +233,7 @@ func TestBatchFuncs_SumByKey_All(t *testing.T) {
 func TestBatchFuncs_Sort(t *testing.T) {
 	op := SortFunc()
 	data := []string{"Spirit", "Voyager", "BigFoot", "Enola", "Memphis"}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 
 	sorted := val.([]string)
 
@@ -252,7 +251,7 @@ func TestBatchFuncs_SortByPos(t *testing.T) {
 		{"Enola", "plane", "propeller"},
 		{"Memphis", "plane", "propeller"},
 	}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 
 	sorted := val.([][]string)
 
@@ -274,7 +273,7 @@ func TestBatchFuncs_SortByName(t *testing.T) {
 		{"Enola", "plane", "propeller", 12},
 		{"Memphis", "plane", "propeller", 48},
 	}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 
 	sorted := val.([]V)
 	if sorted[0].Vehicle != "BigFoot" && sorted[1].Vehicle != "Enola" && sorted[2].Vehicle != "Memphis" {
@@ -291,7 +290,7 @@ func TestBatchFuncs_SortByKey(t *testing.T) {
 		{"Vehicle": "Enola", "Kind": "plane", "Engine": "propeller"},
 		{"Vehicle": "Memphis", "Kind": "plane", "Engine": "propeller"},
 	}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 
 	sorted := val.([]map[string]string)
 	if sorted[0]["Vehicle"] != "BigFoot" && sorted[1]["Vehicle"] != "Enola" && sorted[2]["Vehicle"] != "Memphis" {
@@ -311,7 +310,7 @@ func TestBatchFuncs_SortWithFunc(t *testing.T) {
 		"Enola",
 		"Memphis",
 	}
-	val := op.Apply(context.TODO(), data)
+	val, _ := op.Apply(context.TODO(), data)
 	sorted := val.([]string)
 	if sorted[0] != "BigFoot" && sorted[1] != "Enola" && sorted[2] != "Membphis" {
 		t.Fatal("Unexpected sort order")
