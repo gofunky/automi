@@ -88,10 +88,7 @@ func (s *Stream) Open() <-chan error {
 		}
 		//apply operators, if err bail
 		for _, op := range s.ops {
-			if err := op.Exec(); err != nil {
-				s.drainErr(err)
-				return
-			}
+			op.Exec(s.drain)
 		}
 		// open sink and block until stream is done
 		select {
@@ -158,7 +155,7 @@ func (s *Stream) setupSource() error {
 
 	// check specific type
 	switch src := s.srcParam.(type) {
-	case (api.Source):
+	case api.Source:
 		s.source = src
 	case *os.File:
 		// assume csv

@@ -90,12 +90,16 @@ func TestBatchOp_Exec_OneBatch(t *testing.T) {
 		}
 	}()
 
-	if err := o.Exec(); err != nil {
-		t.Fatal(err)
-	}
+	drain := make(chan error)
+	o.Exec(drain)
 
 	select {
 	case <-wait:
+		select {
+		case err := <-drain:
+			t.Fatal(err)
+		default:
+		}
 		if batches != expectedBatches {
 			t.Fatalf("Expecting %d batch, but got %d", expectedBatches, batches)
 		}
@@ -148,12 +152,16 @@ func TestBatchOp_Exec_MultipleBatches(t *testing.T) {
 		}
 	}()
 
-	if err := o.Exec(); err != nil {
-		t.Fatal(err)
-	}
+	drain := make(chan error)
+	o.Exec(drain)
 
 	select {
 	case <-wait:
+		select {
+		case err := <-drain:
+			t.Fatal(err)
+		default:
+		}
 		if batches != expectedBatches {
 			t.Fatalf("Expecting %d batch, but got %d", expectedBatches, batches)
 		}
@@ -184,12 +192,16 @@ func TestBatchOp_BatchSlice(t *testing.T) {
 		}
 	}()
 
-	if err := o.Exec(); err != nil {
-		t.Fatal(err)
-	}
+	drain := make(chan error)
+	o.Exec(drain)
 
 	select {
 	case <-wait:
+		select {
+		case err := <-drain:
+			t.Fatal(err)
+		default:
+		}
 		if !typeOk {
 			t.Fatal("unexpected batch type")
 		}
@@ -221,12 +233,16 @@ func TestBatchOp_BatchMap(t *testing.T) {
 		}
 	}()
 
-	if err := o.Exec(); err != nil {
-		t.Fatal(err)
-	}
+	drain := make(chan error)
+	o.Exec(drain)
 
 	select {
 	case <-wait:
+		select {
+		case err := <-drain:
+			t.Fatal(err)
+		default:
+		}
 		if !typeOk {
 			t.Fatal("unexpected batch type")
 		}
@@ -257,12 +273,16 @@ func TestBatchOp_BatchStruct(t *testing.T) {
 		}
 	}()
 
-	if err := o.Exec(); err != nil {
-		t.Fatal(err)
-	}
+	drain := make(chan error)
+	o.Exec(drain)
 
 	select {
 	case <-wait:
+		select {
+		case err := <-drain:
+			t.Fatal(err)
+		default:
+		}
 		if !typeOk {
 			t.Fatal("unexpected batch type")
 		}
@@ -299,7 +319,7 @@ func BenchmarkBatchOp_Exec(b *testing.B) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		for _ = range o.GetOutput() {
+		for range o.GetOutput() {
 			m.Lock()
 			counter++
 			m.Unlock()
@@ -307,7 +327,10 @@ func BenchmarkBatchOp_Exec(b *testing.B) {
 	}()
 
 	b.Logf("Benchmark N: %d, chan size %d; batch size %d", N, size, expected)
-	if err := o.Exec(); err != nil {
+	drain := make(chan error)
+	o.Exec(drain)
+
+	if err := <-drain; err != nil {
 		b.Fatal("Error during execution:", err)
 	}
 

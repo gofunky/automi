@@ -49,7 +49,7 @@ type Sink interface {
 type Operator interface {
 	Collector
 	Emitter
-	Exec() error
+	Exec(drain chan<- error)
 }
 
 type ProcError struct {

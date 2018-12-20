@@ -75,12 +75,16 @@ func TestBinaryOp_Exec(t *testing.T) {
 	}()
 	o.SetInput(in)
 
-	if err := o.Exec(); err != nil {
-		t.Fatal(err)
-	}
+	drain := make(chan error)
+	o.Exec(drain)
 
 	select {
 	case out := <-o.GetOutput():
+		select {
+		case err := <-drain:
+			t.Fatal(err)
+		default:
+		}
 		val := out.(int)
 		if val != 10 {
 			t.Fatal("Values not adding up to expected 10")
@@ -121,7 +125,10 @@ func BenchmarkBinaryOp_Exec(b *testing.B) {
 
 	// process output
 
-	if err := o.Exec(); err != nil {
+	drain := make(chan error)
+	o.Exec(drain)
+
+	if err := <-drain; err != nil {
 		b.Fatal("Error during execution:", err)
 	}
 

@@ -69,9 +69,9 @@ func (o *BinaryOperator) GetOutput() <-chan interface{} {
 }
 
 // Exec executes the associated operation
-func (o *BinaryOperator) Exec() (err error) {
+func (o *BinaryOperator) Exec(drain chan<- error) {
 	if o.input == nil {
-		err = fmt.Errorf("No input channel found")
+		drain <- fmt.Errorf("no input channel found")
 		return
 	}
 
@@ -115,7 +115,6 @@ func (o *BinaryOperator) Exec() (err error) {
 			return
 		}
 	}()
-	return nil
 }
 
 // doProc is a helper function that executes the operation

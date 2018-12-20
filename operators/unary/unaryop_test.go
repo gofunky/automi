@@ -87,12 +87,16 @@ func TestUnaryOp_Exec(t *testing.T) {
 		}
 	}()
 
-	if err := o.Exec(); err != nil {
-		t.Fatal(err)
-	}
+	drain := make(chan error)
+	o.Exec(drain)
 
 	select {
 	case <-wait:
+		select {
+		case err := <-drain:
+			t.Fatal(err)
+		default:
+		}
 	case <-time.After(50 * time.Millisecond):
 		t.Fatal("Took too long...")
 	}
@@ -138,7 +142,10 @@ func BenchmarkUnaryOp_Exec(b *testing.B) {
 		}
 	}()
 
-	if err := o.Exec(); err != nil {
+	drain := make(chan error)
+	o.Exec(drain)
+
+	if err := <-drain; err != nil {
 		b.Fatal("Error during execution:", err)
 	}
 

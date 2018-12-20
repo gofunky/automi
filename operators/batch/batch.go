@@ -52,9 +52,9 @@ func (op *BatchOperator) SetTrigger(trigger api.BatchTrigger) {
 // The batch operator batches N size items from upstream into
 // a slice []T.  When the slice reaches size N, the slice is sent
 // downstream for processing.
-func (op *BatchOperator) Exec() (err error) {
+func (op *BatchOperator) Exec(drain chan<- error) {
 	if op.input == nil {
-		err = fmt.Errorf("No input channel found")
+		drain <- fmt.Errorf("no input channel found")
 		return
 	}
 
@@ -108,7 +108,6 @@ func (op *BatchOperator) Exec() (err error) {
 			}
 		}
 	}()
-	return nil
 }
 
 // makeBatchType detects and return type to be used for the batch based

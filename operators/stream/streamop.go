@@ -46,9 +46,9 @@ func (r *StreamOperator) GetOutput() <-chan interface{} {
 }
 
 // Exec is the execution starting point for the executor node.
-func (r *StreamOperator) Exec() (err error) {
+func (r *StreamOperator) Exec(drain chan<- error) {
 	if r.input == nil {
-		err = fmt.Errorf("No input channel found")
+		drain <- fmt.Errorf("no input channel found")
 		return
 	}
 
@@ -92,5 +92,4 @@ func (r *StreamOperator) Exec() (err error) {
 			}
 		}
 	}()
-	return nil
 }

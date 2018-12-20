@@ -141,6 +141,7 @@ func main() {
 	}))
 
 	// open the stream
+	// TODO: Update Readme Code Examples
 	if err := <-stream.Open(); err != nil {
 		fmt.Println(err)
 		return

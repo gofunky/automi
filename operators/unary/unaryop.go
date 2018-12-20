@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/uber-go/atomic"
 	"sync"
 
 	"github.com/go-faces/logger"
@@ -73,18 +72,19 @@ func (o *UnaryOperator) GetOutput() <-chan interface{} {
 }
 
 // Exec is the entry point for the executor
-func (o *UnaryOperator) Exec() (err error) {
+func (o *UnaryOperator) Exec(drain chan<- error) {
 	if o.input == nil {
-		err = fmt.Errorf("No input channel found")
+		err := fmt.Errorf("no input channel found")
+		drain <- err
 		return
 	}
+
+	exeCtx, cancel := context.WithCancel(o.ctx)
 
 	// validate p
 	if o.concurrency < 1 {
 		o.concurrency = 1
 	}
-
-	var atomicErr atomic.Error
 
 	go func() {
 		defer func() {
@@ -99,9 +99,12 @@ func (o *UnaryOperator) Exec() (err error) {
 		for i := 0; i < o.concurrency; i++ { // workers
 			go func(wg *sync.WaitGroup) {
 				defer wg.Done()
-				if err := o.doProc(o.ctx); err != nil {
-					atomicErr.Store(err)
+				if err := o.doProc(exeCtx); err != nil {
+					o.mutex.Lock()
+					drain <- err
+					cancel()
 					o.cancelled = true
+					o.mutex.Unlock()
 				}
 			}(&barrier)
 		}
@@ -118,12 +121,11 @@ func (o *UnaryOperator) Exec() (err error) {
 				util.Log(o.log, "unary operator cancelled")
 				return
 			}
-		case <-o.ctx.Done():
+		case <-exeCtx.Done():
 			util.Log(o.log, "unary operator done")
 			return
 		}
 	}()
-	return atomicErr.Load()
 }
 
 func (o *UnaryOperator) doProc(ctx context.Context) error {
