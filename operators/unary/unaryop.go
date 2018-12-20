@@ -141,7 +141,7 @@ func (o *UnaryOperator) doProc(ctx context.Context) error {
 		// process incoming item
 		case item, opened := <-o.input:
 			if !opened {
-				return nil
+				return errors.New("channel not opened")
 			}
 
 			result, err := o.op.Apply(exeCtx, item)
