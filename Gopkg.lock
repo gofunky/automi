@@ -13,15 +13,9 @@
   packages = ["."]
   revision = "c221c11516236e1a31ad2c85eb751ae9a6699b32"
 
-[[projects]]
-  branch = "master"
-  name = "github.com/uber-go/atomic"
-  packages = ["."]
-  revision = "8dc6146f7569370a472715e178d8ae31172ee6da"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ae791c4de6c296b48de46d06fa2ec89fbb9305a58135a0e29f4695b7d230d7db"
+  inputs-digest = "e1737bf6f6d42ddf7b5098cb243d8e5fb5d6e352df3bb2178d374cd455569bd1"
   solver-name = "gps-cdcl"
   solver-version = 1

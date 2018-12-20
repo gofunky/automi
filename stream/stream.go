@@ -50,10 +50,10 @@ func (s *Stream) WithContext(ctx context.Context) *Stream {
 }
 
 // From sets the stream source to use
-//func (s *Stream) From(src api.StreamSource) *Stream {
-//	s.source = src
-//	return s
-//}
+// func (s *Stream) From(src api.StreamSource) *Stream {
+// 	s.source = src
+// 	return s
+// }
 
 // Into sets the terminal stream sink to use
 func (s *Stream) Into(snk interface{}) *Stream {
@@ -86,7 +86,7 @@ func (s *Stream) Open() <-chan error {
 			s.drainErr(err)
 			return
 		}
-		//apply operators, if err bail
+		// apply operators, if err bail
 		for _, op := range s.ops {
 			op.Exec(s.drain)
 		}
@@ -222,5 +222,7 @@ func (s *Stream) setupSink() error {
 }
 
 func (s *Stream) drainErr(err error) {
-	go func() { s.drain <- err }()
+	if err != nil {
+		go func() { s.drain <- err }()
+	}
 }
