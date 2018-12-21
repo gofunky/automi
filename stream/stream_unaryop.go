@@ -27,6 +27,7 @@ func (s *Stream) Process(f interface{}) *Stream {
 	op, err := unary.ProcessFunc(f)
 	if err != nil {
 		s.drainErr(err)
+		return s
 	}
 	return s.Transform(op)
 }
@@ -39,6 +40,7 @@ func (s *Stream) Filter(f interface{}) *Stream {
 	op, err := unary.FilterFunc(f)
 	if err != nil {
 		s.drainErr(err)
+		return s
 	}
 	return s.Transform(op)
 }
@@ -51,6 +53,7 @@ func (s *Stream) Map(f interface{}) *Stream {
 	op, err := unary.MapFunc(f)
 	if err != nil {
 		s.drainErr(err)
+		return s
 	}
 	return s.Transform(op)
 }
@@ -65,6 +68,7 @@ func (s *Stream) FlatMap(f interface{}) *Stream {
 	op, err := unary.FlatMapFunc(f)
 	if err != nil {
 		s.drainErr(err)
+		return s
 	}
 	s.Transform(op) // add flatmap as unary op
 	s.ReStream()    // add streamop to unpack flatmap result
