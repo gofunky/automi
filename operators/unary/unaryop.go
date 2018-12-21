@@ -79,8 +79,6 @@ func (o *UnaryOperator) Exec(drain chan<- error) {
 		return
 	}
 
-	exeCtx, cancel := context.WithCancel(o.ctx)
-
 	// validate p
 	if o.concurrency < 1 {
 		o.concurrency = 1
@@ -96,24 +94,20 @@ func (o *UnaryOperator) Exec(drain chan<- error) {
 		wgDelta := o.concurrency
 		barrier.Add(wgDelta)
 
-		for i := 0; i < o.concurrency; i++ { // workers
+		wait := make(chan struct{})
+		go func(wg *sync.WaitGroup) {
+			defer close(wait)
+			wg.Wait()
+		}(&barrier)
+
+		for i := 0; i < o.concurrency; i++ {
 			go func(wg *sync.WaitGroup) {
 				defer wg.Done()
-				if err := o.doProc(exeCtx); err != nil {
-					o.mutex.Lock()
+				if err := o.doProc(o.ctx); err != nil {
 					drain <- err
-					cancel()
-					o.cancelled = true
-					o.mutex.Unlock()
 				}
 			}(&barrier)
 		}
-
-		wait := make(chan struct{})
-		go func() {
-			defer close(wait)
-			barrier.Wait()
-		}()
 
 		select {
 		case <-wait:
@@ -121,7 +115,7 @@ func (o *UnaryOperator) Exec(drain chan<- error) {
 				util.Log(o.log, "unary operator cancelled")
 				return
 			}
-		case <-exeCtx.Done():
+		case <-o.ctx.Done():
 			util.Log(o.log, "unary operator done")
 			return
 		}
@@ -141,7 +135,7 @@ func (o *UnaryOperator) doProc(ctx context.Context) error {
 		// process incoming item
 		case item, opened := <-o.input:
 			if !opened {
-				return errors.New("channel not opened")
+				return nil
 			}
 
 			result, err := o.op.Apply(exeCtx, item)

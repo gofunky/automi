@@ -60,8 +60,8 @@ func (c *FuncCollector) Open(ctx context.Context) <-chan error {
 
 		for val := range c.input {
 			if err := c.f(val); err != nil {
-				// TODO proper error handling
 				util.Log(c.log, err)
+				result <- err
 			}
 		}
 	}()
