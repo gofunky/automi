@@ -27,6 +27,14 @@ func TestUnaryFunc_Process(t *testing.T) {
 	}
 }
 
+func TestUnaryFunc_InvalidSignature(t *testing.T) {
+	_, err := ProcessFunc(TestUnaryFunc_InvalidSignature)
+
+	if err == nil {
+		t.Fatal("invalid signature not detected")
+	}
+}
+
 func TestUnaryFunc_Filter(t *testing.T) {
 	op, err := FilterFunc(func(item string) bool {
 		return item[0] == []byte("T")[0]
