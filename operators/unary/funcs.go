@@ -32,7 +32,7 @@ func ProcessFunc(f interface{}) (api.UnFunc, error) {
 		arg0 := reflect.ValueOf(data)
 		call := fnval.Call([]reflect.Value{arg0})
 		result = call[0].Interface()
-		if len(call) > 1 {
+		if len(call) > 1 && !call[1].IsNil() {
 			err = call[1].Interface().(error)
 		}
 		return
@@ -125,6 +125,7 @@ func FlatMapFunc(f interface{}) (api.UnFunc, error) {
 
 // isUnaryFuncForm ensures type is a function of form func(in)out or func(in)(out, error).
 func isUnaryFuncForm(ftype reflect.Type) error {
+	errorInterface := reflect.TypeOf((*error)(nil)).Elem()
 	// enforce f with sig fn(in)out
 	switch ftype.Kind() {
 	case reflect.Func:
@@ -133,7 +134,7 @@ func isUnaryFuncForm(ftype reflect.Type) error {
 		}
 		if ftype.NumOut() == 0 || ftype.NumOut() > 2 {
 			return fmt.Errorf("unary %v must return one value or two with the second being an error", ftype.String())
-		} else if ftype.NumOut() == 2 && ftype.Out(1).Kind().String() != "error" {
+		} else if ftype.NumOut() == 2 && !ftype.Out(1).Implements(errorInterface) {
 			return fmt.Errorf("the second return value's type of the unary %v must be an error", ftype.String())
 		}
 	default:

@@ -3,6 +3,7 @@ package unary
 import (
 	"bytes"
 	"context"
+	"errors"
 	"testing"
 )
 
@@ -32,6 +33,49 @@ func TestUnaryFunc_InvalidSignature(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("invalid signature not detected")
+	}
+}
+
+func TestUnaryFunc_ErrorSignature(t *testing.T) {
+	op, err := ProcessFunc(func(item int) (int, error) {
+		return item * 2, nil
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sum := 0
+	ctx := context.TODO()
+	for _, v := range []int{2, 4, 6, 8} {
+		result, _ := op.Apply(ctx, v)
+		sum += result.(int)
+	}
+
+	if sum != 40 {
+		t.Fatal("unexpected result from ProcessFunc:", sum)
+	}
+}
+
+func TestUnaryFunc_ErrorFunc(t *testing.T) {
+	op, err := ProcessFunc(func(item int) (string, error) {
+		if item > 2 {
+			return "", errors.New("greater than 2")
+		} else {
+			return "ok", nil
+		}
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := context.TODO()
+	for _, v := range []int{2, 4, 6, 8} {
+		_, err := op.Apply(ctx, v)
+		if v > 2 && err == nil {
+			t.Fatal("error not propagated")
+		}
 	}
 }
 
