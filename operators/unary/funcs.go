@@ -131,10 +131,10 @@ func isUnaryFuncForm(ftype reflect.Type) error {
 		if ftype.NumIn() != 1 {
 			return fmt.Errorf("unary function must take one parameter")
 		}
-		if ftype.NumOut() == 2 {
-			if ftype.Out(1).Kind().String() != "error" {
-				return fmt.Errorf("unary func must return one param or two with the second being an error")
-			}
+		if ftype.NumOut() == 0 || ftype.NumOut() > 2 {
+			return fmt.Errorf("unary func must return one value or two with the second being an error")
+		} else if ftype.NumOut() == 2 && ftype.Out(1).Kind().String() != "error" {
+			return fmt.Errorf("the second return value's return type of the unary func must be an error")
 		}
 	default:
 		return fmt.Errorf("requires unary function of type func(T)R or func(T)(R, error)")
