@@ -103,6 +103,19 @@ if err := <-strm.Open(); err != nil {
 
 `Stream.Open` opens the stream once it is composed (above).  This starts the emitter and executes the operations attached the stream.
 
+#### Use a timeout
+
+```go
+select {
+case err := <-strm.Open():
+	if err != nil {
+		fmt.Println(err)
+	}
+case <-time.After(500 * time.Millisecond):
+	fmt.Println("timeout reached")
+}
+```
+
 ### Example: streaming from `io.Reader`
 
 The next example shows how to use Automi to stream data from an emitter that implements`io.Reader`.  While the example uses an in-memory source, this should work with any value that implements `io.Reader` including `os.File` for streaming file content and `net.Conn` for streaming content from connected sources.
@@ -141,7 +154,6 @@ func main() {
 	}))
 
 	// open the stream
-	// TODO: Update Readme Code Examples
 	if err := <-stream.Open(); err != nil {
 		fmt.Println(err)
 		return
