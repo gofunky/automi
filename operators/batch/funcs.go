@@ -23,7 +23,7 @@ func GroupByPosFunc(pos int) api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		group := make(map[interface{}][]interface{})
@@ -76,7 +76,7 @@ func SumByPosFunc(pos int) api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		result := make(map[int]float64)
@@ -115,7 +115,7 @@ func GroupByNameFunc(name string) api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 		name = strings.Title(name) // avoid unexported field panic
 		group := make(map[interface{}][]interface{})
@@ -145,7 +145,7 @@ func GroupByNameFunc(name string) api.UnFunc {
 				}
 
 			default:
-				return nil, fmt.Errorf("unexpected slice type: %s", item.Type().String())
+				return nil, fmt.Errorf("%s received an unexpected slice type: %s", util.TraceFunc(), item.Type().String())
 			}
 		}
 		return []map[interface{}][]interface{}{group}, nil
@@ -168,7 +168,7 @@ func SumByNameFunc(name string) api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		name = strings.Title(name) // avoid unexported field panic
@@ -205,7 +205,7 @@ func SumByNameFunc(name string) api.UnFunc {
 					}
 				}
 			default:
-				return nil, fmt.Errorf("unexpected slice type: %s", item.Type().String())
+				return nil, fmt.Errorf("%s received an unexpected slice type: %s", util.TraceFunc(), item.Type().String())
 
 			}
 
@@ -227,7 +227,7 @@ func GroupByKeyFunc(key interface{}) api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		group := make(map[interface{}][]interface{})
@@ -255,7 +255,7 @@ func GroupByKeyFunc(key interface{}) api.UnFunc {
 					}
 
 				default:
-					return nil, fmt.Errorf("unexpected slice type: %s", item.Type().String())
+					return nil, fmt.Errorf("%s received an unexpected slice type: %s", util.TraceFunc(), item.Type().String())
 				}
 			}
 		}
@@ -281,7 +281,7 @@ func SumByKeyFunc(key interface{}) api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		result := make(map[interface{}]float64)
@@ -317,7 +317,7 @@ func SumByKeyFunc(key interface{}) api.UnFunc {
 						}
 					}
 				default:
-					return nil, fmt.Errorf("unexpected slice type: %s", item.Type().String())
+					return nil, fmt.Errorf("%s received an unexpected slice type: %s", util.TraceFunc(), item.Type().String())
 				}
 			}
 		}
@@ -340,7 +340,7 @@ func SumFunc() api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		var sum float64
@@ -398,7 +398,7 @@ func SortFunc() api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		// use sort.Sort() to sepecify a Less function
@@ -427,7 +427,7 @@ func SortByPosFunc(pos int) api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		// use sort.Sort() to sepecify a Less function
@@ -465,7 +465,7 @@ func SortByNameFunc(name string) api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		name = strings.Title(name) // cap name to avoid panic
@@ -501,7 +501,7 @@ func SortByKeyFunc(key interface{}) api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		sort.Slice(dataVal.Interface(), func(i, j int) bool {
@@ -539,7 +539,7 @@ func SortWithFunc(f func(batch interface{}, i, j int) bool) api.UnFunc {
 
 		// validate expected type
 		if dataType.Kind() != reflect.Slice && dataType.Kind() != reflect.Array {
-			return param0, fmt.Errorf("unexpected type: %s", dataType.String())
+			return param0, fmt.Errorf("%s received an unexpected type: %s", util.TraceFunc(), dataType.String())
 		}
 
 		sort.Slice(dataVal.Interface(), func(i, j int) bool {

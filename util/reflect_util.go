@@ -1,9 +1,19 @@
 package util
 
-import "reflect"
+import (
+	"reflect"
+	"runtime"
+)
+
+func TraceFunc() string {
+	pc := make([]uintptr, 10)
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[0])
+	return f.Name()
+}
 
 func IsNumericValue(val reflect.Value) bool {
-	return (IsIntValue(val) || IsFloatValue(val))
+	return IsIntValue(val) || IsFloatValue(val)
 }
 
 func IsIntValue(val reflect.Value) bool {
