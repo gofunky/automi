@@ -116,7 +116,7 @@ func FlatMapFunc(f interface{}) (api.UnFunc, error) {
 		arg0 := reflect.ValueOf(data)
 		call := fnval.Call([]reflect.Value{arg0})
 		result = call[0].Interface()
-		if len(call) > 1 {
+		if len(call) > 1 && !call[1].IsNil() {
 			err = call[1].Interface().(error)
 		}
 		return
