@@ -26,8 +26,8 @@ func TestBinaryOp_New(t *testing.T) {
 }
 func TestBinaryOp_Params(t *testing.T) {
 	o := New(context.Background())
-	op := api.BinFunc(func(ctx context.Context, op1, op2 interface{}) interface{} {
-		return nil
+	op := api.BinFunc(func(ctx context.Context, op1, op2 interface{}) (interface{}, error) {
+		return nil, nil
 	})
 	in := make(chan interface{})
 
@@ -56,13 +56,13 @@ func TestBinaryOp_Exec(t *testing.T) {
 	o := New(ctx)
 
 	o.SetInitialState(0)
-	op := api.BinFunc(func(ctx context.Context, op1, op2 interface{}) interface{} {
+	op := api.BinFunc(func(ctx context.Context, op1, op2 interface{}) (interface{}, error) {
 		init := op1.(int)
 		items := op2.([]int)
 		for _, item := range items {
 			init += item
 		}
-		return init
+		return init, nil
 	})
 	o.SetOperation(op)
 
@@ -116,10 +116,10 @@ func BenchmarkBinaryOp_Exec(b *testing.B) {
 		close(in)
 	}()
 
-	op := api.BinFunc(func(ctx context.Context, op1, op2 interface{}) interface{} {
+	op := api.BinFunc(func(ctx context.Context, op1, op2 interface{}) (interface{}, error) {
 		val0 := op1.(int)
 		val1 := op2.(int)
-		return val0 + val1
+		return val0 + val1, nil
 	})
 	o.SetOperation(op)
 

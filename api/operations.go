@@ -17,14 +17,14 @@ func (f UnFunc) Apply(ctx context.Context, data interface{}) (interface{}, error
 
 // BinOperation interface represents binary opeartions (i.e. Reduce, etc)
 type BinOperation interface {
-	Apply(ctx context.Context, op1, op2 interface{}) interface{}
+	Apply(ctx context.Context, op1, op2 interface{}) (interface{}, error)
 }
 
 // BinFunc implements BinOperation as type func(context.Context, interface{}, interface{})
-type BinFunc func(context.Context, interface{}, interface{}) interface{}
+type BinFunc func(context.Context, interface{}, interface{}) (interface{}, error)
 
 // Apply implements BinOpeartion.Apply
-func (f BinFunc) Apply(ctx context.Context, op1, op2 interface{}) interface{} {
+func (f BinFunc) Apply(ctx context.Context, op1, op2 interface{}) (interface{}, error) {
 	return f(ctx, op1, op2)
 }
 

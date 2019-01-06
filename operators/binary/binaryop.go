@@ -133,7 +133,7 @@ func (o *BinaryOperator) doProc(ctx context.Context) {
 				return
 			}
 
-			o.state = o.op.Apply(exeCtx, o.state, item)
+			o.state, _ = o.op.Apply(exeCtx, o.state, item)
 
 			switch val := o.state.(type) {
 			case nil:

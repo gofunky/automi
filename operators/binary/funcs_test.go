@@ -17,7 +17,7 @@ func TestBinaryFunc_Reduce(t *testing.T) {
 	ctx := context.TODO()
 
 	for _, v := range []int{1, 2, 3, 4, 5} {
-		result := op.Apply(ctx, seed, v)
+		result, _ := op.Apply(ctx, seed, v)
 		seed = result.(int)
 	}
 
