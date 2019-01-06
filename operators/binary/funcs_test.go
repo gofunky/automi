@@ -2,6 +2,7 @@ package binary
 
 import (
 	"context"
+	"errors"
 	"testing"
 )
 
@@ -23,5 +24,26 @@ func TestBinaryFunc_Reduce(t *testing.T) {
 
 	if seed != 15 {
 		t.Fatal("unexpected result from ReduceFunc: ", seed)
+	}
+}
+
+func TestBinaryFunc_Reduce_WithError(t *testing.T) {
+	op, err := ReduceFunc(func(op0, op1 int) (int, error) {
+		return 0, errors.New("error")
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	seed := 0
+	ctx := context.TODO()
+
+	for _, v := range []int{1, 2, 3, 4, 5} {
+		_, err := op.Apply(ctx, seed, v)
+
+		if err == nil {
+			t.Fatal("error not propagated")
+		}
 	}
 }

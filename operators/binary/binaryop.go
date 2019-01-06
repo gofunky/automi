@@ -2,6 +2,7 @@ package binary
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -94,7 +95,9 @@ func (o *BinaryOperator) Exec(drain chan<- error) {
 		for i := 0; i < o.concurrency; i++ { // workers
 			go func(wg *sync.WaitGroup) {
 				defer wg.Done()
-				o.doProc(o.ctx)
+				if err := o.doProc(o.ctx); err != nil {
+					drain <- err
+				}
 			}(&barrier)
 		}
 
@@ -118,10 +121,11 @@ func (o *BinaryOperator) Exec(drain chan<- error) {
 }
 
 // doProc is a helper function that executes the operation
-func (o *BinaryOperator) doProc(ctx context.Context) {
+func (o *BinaryOperator) doProc(ctx context.Context) (err error) {
 	if o.op == nil {
-		o.log.Print("no operation defined for BinaryOperator")
-		return
+		err := errors.New("binary operator missing operation")
+		util.Log(o.log, err)
+		return err
 	}
 	exeCtx, cancel := context.WithCancel(ctx)
 
@@ -130,10 +134,14 @@ func (o *BinaryOperator) doProc(ctx context.Context) {
 		// process incoming item
 		case item, opened := <-o.input:
 			if !opened {
-				return
+				return nil
 			}
 
-			o.state, _ = o.op.Apply(exeCtx, o.state, item)
+			o.state, err = o.op.Apply(exeCtx, o.state, item)
+			if err != nil {
+				util.Log(o.log, err)
+				return err
+			}
 
 			switch val := o.state.(type) {
 			case nil:
@@ -145,12 +153,12 @@ func (o *BinaryOperator) doProc(ctx context.Context) {
 
 		// is cancelling
 		case <-ctx.Done():
-			o.log.Println("cancelling....")
+			util.Log(o.log, "binary operator cancelling...")
 			o.mutex.Lock()
 			cancel()
 			o.cancelled = true
 			o.mutex.Unlock()
-			return
+			return nil
 		}
 	}
 }

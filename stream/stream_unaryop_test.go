@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"errors"
 	"github.com/deckarep/golang-set"
 	"github.com/gofunky/automi/api/tuple"
 	"strings"
@@ -80,6 +81,24 @@ func TestStream_Map(t *testing.T) {
 
 	if count != 19 {
 		t.Fatal("Map failed, expected count 19, got ", count)
+	}
+}
+
+func TestStream_Map_WithError(t *testing.T) {
+	expectedErr := errors.New("test error")
+	src := emitters.Slice([]string{"HELLO", "WORLD", "HOW", "ARE", "YOU"})
+	snk := collectors.Slice()
+	strm := New(src).Map(func(data string) (int, error) {
+		return 0, expectedErr
+	}).Into(snk)
+
+	select {
+	case err := <-strm.Open():
+		if err != expectedErr {
+			t.Fatal(err)
+		}
+	case <-time.After(50 * time.Millisecond):
+		t.Fatal("Waited too long for stream to Open...")
 	}
 }
 

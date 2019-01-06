@@ -156,7 +156,7 @@ func (o *UnaryOperator) doProc(ctx context.Context) error {
 
 		// is cancelling
 		case <-ctx.Done():
-			util.Log(o.log, "unary operator cancelling")
+			util.Log(o.log, "unary operator cancelling...")
 			o.mutex.Lock()
 			cancel()
 			o.cancelled = true
