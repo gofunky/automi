@@ -1,0 +1,8 @@
+github.com/deckarep/golang-set v1.7.1 h1:SCQV0S6gTtp6itiFrTqI+pfmJ4LN85S1YzhDf9rTHJQ=
+github.com/deckarep/golang-set v1.7.1/go.mod h1:93vsz/8Wt4joVM7c2AVqh+YRMiUSc14yDtF28KmMOgQ=
+github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg=
+github.com/emirpasic/gods v1.12.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
+github.com/go-faces/logger v0.0.0-20180617163310-c221c1151623 h1:xVUX8RsBcPkY/71ROl0LH1R/CdWb2T4SgZG5/YBzLG8=
+github.com/go-faces/logger v0.0.0-20180617163310-c221c1151623/go.mod h1:SVVgV84TH5kwnQnkxfbczA9G/f7/dJXNmajoScO6zTY=
+github.com/gofunky/automi v0.0.0-20190106212427-af9d4ec3512a h1:wxCGIrzOvEo+wA8PiDon19v+14zVCaXZ1JIuFX1uTOU=
+github.com/gofunky/automi v0.0.0-20190106212427-af9d4ec3512a/go.mod h1:NlOMgGWYHdhOnJJG0fJYLRZvwq8KXQ1u8v31wUStyvE=

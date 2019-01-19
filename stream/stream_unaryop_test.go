@@ -3,13 +3,14 @@ package stream
 import (
 	"errors"
 	"github.com/deckarep/golang-set"
+	"github.com/emirpasic/gods/sets"
+	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/gofunky/automi/api/tuple"
+	"github.com/gofunky/automi/collectors"
+	"github.com/gofunky/automi/emitters"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/gofunky/automi/collectors"
-	"github.com/gofunky/automi/emitters"
 )
 
 func TestStream_Process(t *testing.T) {
@@ -131,12 +132,46 @@ func TestStream_FlatMap(t *testing.T) {
 	}
 }
 
-func TestStream_FlatMap_WithSet(t *testing.T) {
+func TestStream_FlatMap_WithMapSet(t *testing.T) {
 	src := emitters.Slice([]string{"HELLO WORLD", "HOW ARE YOU?"})
 	snk := collectors.Slice()
 	strm := New(src).FlatMap(func(data string) (result mapset.Set) {
 		items := strings.Split(data, " ")
 		result = mapset.NewSet()
+		for _, item := range items {
+			result.Add(item)
+		}
+		return result
+	}).Into(snk)
+
+	count := 0
+	expected := 20
+
+	select {
+	case err := <-strm.Open():
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, data := range snk.Get() {
+			vals := data.(string)
+			count += len(vals)
+		}
+
+		if count != expected {
+			t.Fatalf("Expecting %d words, got %d", expected, count)
+		}
+	case <-time.After(50 * time.Millisecond):
+		t.Fatal("Waited too long ...")
+	}
+}
+
+func TestStream_FlatMap_WithSets(t *testing.T) {
+	src := emitters.Slice([]string{"HELLO WORLD", "HOW ARE YOU?"})
+	snk := collectors.Slice()
+	strm := New(src).FlatMap(func(data string) (result sets.Set) {
+		items := strings.Split(data, " ")
+		result = hashset.New()
 		for _, item := range items {
 			result.Add(item)
 		}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/deckarep/golang-set"
+	"github.com/emirpasic/gods/containers"
 	"reflect"
 
 	"github.com/gofunky/automi/api"
@@ -87,12 +88,15 @@ func FlatMapFunc(f interface{}) (api.UnFunc, error) {
 	if err := isUnaryFuncForm(fntype); err != nil {
 		return nil, err
 	}
-	if fntype.Out(0) != reflect.TypeOf((*mapset.Set)(nil)).Elem() {
-		switch fntype.Out(0).Kind() {
-		case reflect.Slice, reflect.Array, reflect.Map:
-			// Do nothing
-		default:
-			return nil, fmt.Errorf("FlatMap function must return a slice, array, map, or set, actual type %v", fntype.Out(0).Name())
+	switch fntype.Out(0).Kind() {
+	case reflect.Slice, reflect.Array, reflect.Map:
+		// Do nothing
+	default:
+		retType := reflect.PtrTo(fntype.Out(0))
+		mapSetType := reflect.TypeOf((*mapset.Set)(nil)).Elem()
+		containerType := reflect.TypeOf((*containers.Container)(nil)).Elem()
+		if !retType.Implements(mapSetType) && !retType.Implements(containerType) {
+			return nil, fmt.Errorf("FlatMap function must return a slice, array, map, mapset, or container, actual type %v", fntype.Out(0).Name())
 		}
 	}
 

@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/deckarep/golang-set"
-	"reflect"
-
+	"github.com/emirpasic/gods/containers"
 	"github.com/go-faces/logger"
 	autoctx "github.com/gofunky/automi/api/context"
 	"github.com/gofunky/automi/api/tuple"
 	"github.com/gofunky/automi/util"
+	"reflect"
 )
 
 // StreamOperator is an operator takes streamed items of type
@@ -67,6 +67,11 @@ func (r *StreamOperator) Exec(drain chan<- error) {
 				itemVal := reflect.ValueOf(item)
 
 				switch item.(type) {
+				case containers.Container:
+					itemSet := item.(containers.Container)
+					for _, subItem := range itemSet.Values() {
+						r.output <- subItem
+					}
 				case mapset.Set:
 					itemSet := item.(mapset.Set)
 					for subItem := range itemSet.Iter() {
