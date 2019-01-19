@@ -92,7 +92,7 @@ func FlatMapFunc(f interface{}) (api.UnFunc, error) {
 	case reflect.Slice, reflect.Array, reflect.Map:
 		// Do nothing
 	default:
-		retType := reflect.PtrTo(fntype.Out(0))
+		retType := fntype.Out(0)
 		mapSetType := reflect.TypeOf((*mapset.Set)(nil)).Elem()
 		containerType := reflect.TypeOf((*containers.Container)(nil)).Elem()
 		if !retType.Implements(mapSetType) && !retType.Implements(containerType) {
