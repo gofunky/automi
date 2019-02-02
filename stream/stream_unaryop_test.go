@@ -2,12 +2,12 @@ package stream
 
 import (
 	"errors"
-	"github.com/deckarep/golang-set"
 	"github.com/emirpasic/gods/sets"
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/gofunky/automi/api/tuple"
 	"github.com/gofunky/automi/collectors"
 	"github.com/gofunky/automi/emitters"
+	"github.com/gofunky/pyraset/v2"
 	"strings"
 	"testing"
 	"time"

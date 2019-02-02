@@ -3,8 +3,8 @@ package unary
 import (
 	"context"
 	"fmt"
-	"github.com/deckarep/golang-set"
 	"github.com/emirpasic/gods/containers"
+	"github.com/gofunky/pyraset/v2"
 	"reflect"
 
 	"github.com/gofunky/automi/api"

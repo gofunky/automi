@@ -3,12 +3,12 @@ package stream
 import (
 	"context"
 	"fmt"
-	"github.com/deckarep/golang-set"
 	"github.com/emirpasic/gods/containers"
 	"github.com/go-faces/logger"
 	autoctx "github.com/gofunky/automi/api/context"
 	"github.com/gofunky/automi/api/tuple"
 	"github.com/gofunky/automi/util"
+	"github.com/gofunky/pyraset/v2"
 	"reflect"
 )
 
