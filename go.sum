@@ -12,5 +12,7 @@ github.com/gofunky/pyraset v0.0.0-20190201174058-c5e2af1b9163 h1:+3XrDmZZntKYqbR
 github.com/gofunky/pyraset v0.0.0-20190201174058-c5e2af1b9163/go.mod h1:cjNWujqnT1n2L0REZJv96oRqtlXdHy76fm10A2goJ1M=
 github.com/gofunky/pyraset/v2 v2.0.1 h1:2uEynDRRQX8jJW5rY09pjHhdnLYYBrmAqRmq7Qly8UQ=
 github.com/gofunky/pyraset/v2 v2.0.1/go.mod h1:gKGNa3ukkBmlBHt1PYM3d6MI5UjWJ5Am5CCuzRMSVGY=
+github.com/gofunky/pyraset/v2 v2.0.2 h1:eI2hiJQ8O7L1US5p7rJs1yAkaPJDnSGzh44d6Ye4KZs=
+github.com/gofunky/pyraset/v2 v2.0.2/go.mod h1:gKGNa3ukkBmlBHt1PYM3d6MI5UjWJ5Am5CCuzRMSVGY=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72 h1:qLC7fQah7D6K1B0ujays3HV9gkFtllcxhzImRR7ArPQ=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
